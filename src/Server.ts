@@ -2,62 +2,78 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import path from 'path';
 import helmet from 'helmet';
+import 'reflect-metadata';
 
+import { Container } from 'inversify';
+import { interfaces, InversifyExpressServer, TYPE } from 'inversify-express-utils';
+import { VersionController } from './controllers/version.controller';
+import * as swagger from 'swagger-express-typescript';
+import { SwaggerDefinitionConstant } from 'swagger-express-typescript';
 import express, { Request, Response, NextFunction } from 'express';
 import { BAD_REQUEST } from 'http-status-codes';
 import 'express-async-errors';
 
-import BaseRouter from './routes';
+// import BaseRouter from './routes';
 import logger from '@shared/Logger';
 
+const container = new Container();
 
-// Init express
-const app = express();
+container.bind<interfaces.Controller> (TYPE.Controller)
+  .to(VersionController).inSingletonScope().whenTargetNamed(VersionController.TARGET_NAME);
 
+const server = new InversifyExpressServer(container);
 
+server.setConfig((exprapp: any) => {
 
-/************************************************************************************
- *                              Set basic express settings
- ***********************************************************************************/
+  /*************
+   * Set basic express settings
+   *************/
 
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
-app.use(cookieParser());
+  exprapp.use(express.json());
+  exprapp.use(express.urlencoded({extended: true}));
+  exprapp.use(cookieParser());
 
-// Show routes called in console during development
-if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'));
-}
+  // Show routes called in console during development
+  if (process.env.NODE_ENV === 'development') {
+      exprapp.use(morgan('dev'));
+  }
 
-// Security
-if (process.env.NODE_ENV === 'production') {
-    app.use(helmet());
-}
+  // Security
+  if (process.env.NODE_ENV === 'production') {
+      exprapp.use(helmet());
+  }
 
-// Add APIs
-app.use('/api', BaseRouter);
+  // Add Swagger
+  exprapp.use(swagger.express(
+    {
+      definition: {
+        info: {
+          title: 'cert-admin api' ,
+          version: '1.0'
+        },
+        externalDocs: {
+          url: process.env.CA_URL || 'http://localhost:3000'
+        }
+        // Models can be defined here
+      }
+    }
+  ));
 
-// Print API errors
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    logger.error(err.message, err);
-    return res.status(BAD_REQUEST).json({
-        error: err.message,
-    });
+  exprapp.use('/api-docs/swagger', express.static(`${__dirname}/swagger`));
+  exprapp.use('/api-docs/swagger/assets', express.static('node_modules/swagger-ui-dist'));
 });
 
-
-
-/************************************************************************************
- *                              Serve front-end content
- ***********************************************************************************/
-
-const viewsDir = path.join(__dirname, 'views');
-app.set('views', viewsDir);
-const staticDir = path.join(__dirname, 'public');
-app.use(express.static(staticDir));
-app.get('*', (req: Request, res: Response) => {
-    res.sendFile('index.html', {root: viewsDir});
+server.setErrorConfig((exprapp: any) => {
+   // Print API errors
+  exprapp.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+      logger.error(err.message, err);
+      return res.status(BAD_REQUEST).json({
+          error: err.message,
+      });
+  });
 });
+
+const app = server.build();
 
 // Export express instance
 export default app;
