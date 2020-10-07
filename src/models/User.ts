@@ -13,6 +13,9 @@ export class User extends Model implements User {
   @Column
   isAdmin!: boolean;
 
+  @Column
+  apiToken?: string;
+
   @BelongsToMany(() => Group, () => UserGroup)
   groups?: Group[];
 }
