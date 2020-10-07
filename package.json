@@ -25,7 +25,7 @@
     "url": "git+https://github.com/digitalcredentials/cred-admin.git"
   },
   "_moduleAliases": {
-    "@daos": "dist/daos",
+    "@models": "dist/models",
     "@entities": "dist/entities",
     "@shared": "dist/shared",
     "@server": "dist/Server"
