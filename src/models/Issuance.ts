@@ -1,4 +1,4 @@
-import {Table, Column, Model, AllowNull, BelongsToMany, BelongsTo} from 'sequelize-typescript';
+import {Table, Column, Model, AllowNull, BelongsToMany, ForeignKey} from 'sequelize-typescript';
 import { Credential } from './Credential';
 import { Recipient } from './Recipient';
 import { RecipientIssuance } from './RecipientIssuance';
@@ -6,15 +6,15 @@ import { RecipientIssuance } from './RecipientIssuance';
 @Table
 export class Issuance extends Model implements Issuance {
 
-  @Column
   @AllowNull(false)
+  @Column
   name!: string;
 
   @Column
   issueDate!: Date;
 
-  @BelongsTo(() => Credential)
-  credential!: Credential;
+  @ForeignKey(() => Credential)
+  credentialid!: number;
 
   @BelongsToMany(() => Recipient, () => RecipientIssuance)
   recipients?: Recipient[];

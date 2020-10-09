@@ -5,21 +5,21 @@ import { RecipientIssuance } from './RecipientIssuance';
 @Table
 export class Recipient extends Model implements Recipient {
 
-  @Column
   @AllowNull(false)
+  @Column
   name!: string;
 
-  @Column
   @Unique
   @AllowNull(false)
+  @Column
   email!: string;
 
-  @Column
   @Unique
+  @Column
   did?: string;
 
-  @Column
   @Unique
+  @Column
   externalId?: string;
 
   @BelongsToMany(() => Issuance, () => RecipientIssuance)

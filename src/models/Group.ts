@@ -6,9 +6,9 @@ import { UserGroup } from './UserGroup';
 @Table
 export class Group extends Model implements Group {
 
-  @Column
   @Unique
   @AllowNull(false)
+  @Column
   name!: string;
 
   @BelongsToMany(() => User, () => UserGroup)

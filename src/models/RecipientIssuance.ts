@@ -5,22 +5,22 @@ import { Issuance } from './Issuance';
 @Table
 export class RecipientIssuance extends Model implements RecipientIssuance {
 
-  @Column
   @Default({value: false})
+  @Column
   isIssued?: boolean;
 
   @Column
   issuedAt?: Date;
 
-  @Column
   @Default({value: false})
+  @Column
   isApproved?: boolean;
 
   @Column
   approvedAt?: Date;
 
-  @Column
   @Unique
+  @Column
   awardId?: string;
 
   @ForeignKey(() => Recipient)

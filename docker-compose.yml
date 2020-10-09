@@ -1,0 +1,40 @@
+version: '2.4'
+
+services:
+  db:
+    image: postgres
+    volumes:
+    - postgres_data:/var/lib/postgresql/data/
+    environment:
+        POSTGRES_USER: credadmin
+        POSTGRES_PASSWORD: admin_cred_access
+        POSTGRES_DB: credadmin
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U credadmin -d credadmin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - $HOME/certs:/etc/nginx/certs
+
+  cert-admin:
+    build: .
+    environment:
+      CA_DB_CONNECTION_URL: 'postgres://credadmin:admin_cred_access@db:5432/credadmin'
+      CA_URL: "https://credadmin.127.0.0.1.xip.io"
+      VIRTUAL_HOST: credadmin.127.0.0.1.xip.io
+    expose: 
+      - "3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

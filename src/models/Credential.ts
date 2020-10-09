@@ -1,19 +1,20 @@
-import {Table, Column, DataType, AllowNull, Model, BelongsTo, HasMany} from 'sequelize-typescript';
+import {Table, Column, DataType, AllowNull, Model, ForeignKey, HasMany} from 'sequelize-typescript';
 import { Group } from './Group';
 import { Issuance } from './Issuance';
 
 @Table
 export class Credential extends Model implements Credential {
 
-  @Column
   @AllowNull(false)
+  @Column
   title!: string;
 
-  @Column(DataType.TEXT)
-  description!: string;
+  @Column(DataType.JSONB)
+  template!: object;
 
-  @BelongsTo(() => Group)
-  group!: Group;
+  @ForeignKey(() => Group)
+  @Column
+  groupid!: number;
 
   @HasMany(() => Issuance)
   issuances?: Issuance[];

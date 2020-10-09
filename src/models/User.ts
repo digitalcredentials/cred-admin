@@ -5,16 +5,18 @@ import { UserGroup } from './UserGroup';
 @Table
 export class User extends Model implements User {
 
-  @Column
   @Unique
   @AllowNull(false)
+  @Column
   name!: string;
 
   @Column
   isAdmin!: boolean;
 
+  @Unique
+  @AllowNull(false)
   @Column
-  apiToken?: string;
+  apiToken!: string;
 
   @BelongsToMany(() => Group, () => UserGroup)
   groups?: Group[];

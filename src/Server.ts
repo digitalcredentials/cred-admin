@@ -1,6 +1,8 @@
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+import passport from 'passport';
 import path from 'path';
+import sequelize from './sequelize';
 import helmet from 'helmet';
 import 'reflect-metadata';
 
@@ -11,6 +13,7 @@ import * as swagger from 'swagger-express-typescript';
 import { SwaggerDefinitionConstant } from 'swagger-express-typescript';
 import express, { Request, Response, NextFunction } from 'express';
 import { BAD_REQUEST } from 'http-status-codes';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import 'express-async-errors';
 
 // import BaseRouter from './routes';
@@ -43,12 +46,25 @@ server.setConfig((exprapp: any) => {
       exprapp.use(helmet());
   }
 
+  // Auth
+  const jwtOpts = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.CA_JWT_SECRET || 'secret',
+  };
+  passport.use(new JwtStrategy(jwtOpts, (jwtPayload, done) =>
+    sequelize.models.User.findOne({where:{apiToken: jwtPayload.sub}})
+      .then(user => user ? done(null, user) : done(null, false))
+      .catch(err => done(err, false))
+  ));
+
+  exprapp.use(passport.initialize());
+
   // Add Swagger
   exprapp.use(swagger.express(
     {
       definition: {
         info: {
-          title: 'cert-admin api' ,
+          title: 'cred-admin api' ,
           version: '1.0'
         },
         externalDocs: {

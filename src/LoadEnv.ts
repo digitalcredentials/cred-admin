@@ -12,8 +12,10 @@ const options = commandLineArgs([
 ]);
 
 // Set the env file
-const result2 = dotenv.config();
+if (process.env.NODE_ENV !== 'production') {
+  const result2 = dotenv.config();
 
-if (result2.error) {
-    throw result2.error;
+  if (result2.error) {
+      throw result2.error;
+  }
 }
