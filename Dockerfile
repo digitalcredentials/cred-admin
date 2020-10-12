@@ -18,6 +18,8 @@ WORKDIR /usr/src/app
 
 COPY package.json .
 COPY package-lock.json .
+COPY .sequelize.js .
+COPY migrations migrations
 COPY --from=builder --chown=node:node /usr/src/app/dist dist
 
 RUN npm install --production
