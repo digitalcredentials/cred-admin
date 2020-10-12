@@ -1,10 +1,16 @@
-import {Table, Column, AllowNull, Unique, Model, BelongsToMany} from 'sequelize-typescript';
-import { Group } from './Group';
-import { UserGroup } from './UserGroup';
+import {
+  Table,
+  Column,
+  AllowNull,
+  Unique,
+  Model,
+  BelongsToMany,
+} from "sequelize-typescript";
+import { Group } from "./Group";
+import { UserGroup } from "./UserGroup";
 
 @Table
 export class User extends Model implements User {
-
   @Unique
   @AllowNull(false)
   @Column
@@ -19,5 +25,5 @@ export class User extends Model implements User {
   apiToken!: string;
 
   @BelongsToMany(() => Group, () => UserGroup)
-  groups?: Group[];
+  groups?: Array<Group>;
 }

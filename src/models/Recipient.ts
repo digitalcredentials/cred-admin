@@ -1,10 +1,16 @@
-import {Table, Column, Unique, AllowNull, Model, BelongsToMany, BelongsTo} from 'sequelize-typescript';
-import { Issuance } from './Issuance';
-import { RecipientIssuance } from './RecipientIssuance';
+import {
+  Table,
+  Column,
+  Unique,
+  AllowNull,
+  Model,
+  BelongsToMany,
+} from "sequelize-typescript";
+import { Issuance } from "./Issuance";
+import { RecipientIssuance } from "./RecipientIssuance";
 
 @Table
 export class Recipient extends Model implements Recipient {
-
   @AllowNull(false)
   @Column
   name!: string;
@@ -23,5 +29,5 @@ export class Recipient extends Model implements Recipient {
   externalId?: string;
 
   @BelongsToMany(() => Issuance, () => RecipientIssuance)
-  issuance?: Issuance[];
+  issuance?: Array<Issuance>;
 }

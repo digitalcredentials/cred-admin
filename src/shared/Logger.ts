@@ -4,14 +4,14 @@
  * Documentation: https://github.com/winstonjs/winston
  */
 
-import { createLogger, format, transports } from 'winston';
+import { createLogger, format, transports } from "winston";
 
 // Import Functions
 const { Console } = transports;
 
 // Init Logger
 const logger = createLogger({
-    level: 'info',
+  level: "info",
 });
 
 /**
@@ -30,11 +30,9 @@ const consoleTransport = new Console({
   format: format.combine(
     format.colorize(),
     format.simple(),
-    errorStackFormat(),
+    errorStackFormat()
   ),
 });
 logger.add(consoleTransport);
-
-
 
 export default logger;

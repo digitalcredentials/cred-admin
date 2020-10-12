@@ -4,7 +4,6 @@
     "sourceMap": false
   },
   "exclude": [
-    "spec",
     "src/**/*.mock.ts",
     "src/swagger/"
   ]
