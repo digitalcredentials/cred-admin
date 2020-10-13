@@ -5,6 +5,7 @@ const conf = {
   host: 'db',
   port: 5432,
   dialect: 'postgres',
+  seederStorage: 'sequelize',
 }
 
 module.exports = {
