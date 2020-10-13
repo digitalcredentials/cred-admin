@@ -28,7 +28,6 @@ services:
     build: .
     environment:
       CA_DB_CONNECTION_URL: 'postgres://credadmin:admin_cred_access@db:5432/credadmin'
-      CA_URL: "https://credadmin.127.0.0.1.xip.io"
       VIRTUAL_HOST: credadmin.127.0.0.1.xip.io
     expose: 
       - "3000"

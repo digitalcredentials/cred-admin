@@ -13,7 +13,7 @@ import {
 } from "inversify-express-utils";
 import { VersionController } from "./controllers/version.controller";
 import * as swagger from "swagger-express-typescript";
-// import { SwaggerDefinitionConstant } from "swagger-express-typescript";
+import { SwaggerDefinitionConstant } from "swagger-express-typescript";
 import express, { Request, Response } from "express";
 import { BAD_REQUEST } from "http-status-codes";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
@@ -59,7 +59,7 @@ server.setConfig((exprapp: any) => {
   };
   passport.use(
     new JwtStrategy(jwtOpts, (jwtPayload, done) =>
-      sequelize.models.User.findOne({ where: { apiToken: jwtPayload.sub } })
+      sequelize.models.User.findOne({ where: { apiToken: jwtPayload } })
         .then((user) => (user ? done(null, user) : done(null, false)))
         .catch((err) => done(err, false))
     )
@@ -75,8 +75,13 @@ server.setConfig((exprapp: any) => {
           title: "cred-admin api",
           version: "1.0",
         },
-        externalDocs: {
-          url: process.env.CA_URL || "http://localhost:3000",
+        schemes: ["https"],
+        securityDefinitions: {
+          apiKeyHeader: {
+            type: SwaggerDefinitionConstant.Security.Type.API_KEY,
+            in: SwaggerDefinitionConstant.Security.In.HEADER,
+            name: "Authorization",
+          },
         },
         // Models can be defined here
       },

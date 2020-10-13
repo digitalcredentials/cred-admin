@@ -1,4 +1,5 @@
 import express from "express";
+import passport from "passport";
 import {
   ApiPath,
   ApiOperationGet,
@@ -10,7 +11,7 @@ import { injectable } from "inversify";
 @ApiPath({
   path: "/versions",
   name: "Version",
-  security: { basicAuth: [] },
+  security: { apiKeyHeader: [] },
 })
 @controller("/versions")
 @injectable()
@@ -40,11 +41,12 @@ export class VersionController implements interfaces.Controller {
       apiKeyHeader: [],
     },
   })
-  @httpGet("/")
+  @httpGet("/", passport.authenticate("jwt", { session: false }))
   public getVersions(
     request: express.Request,
     response: express.Response
   ): void {
+    console.log(request.user);
     response.json(this.data);
   }
 }
