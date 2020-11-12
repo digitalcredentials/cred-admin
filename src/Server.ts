@@ -13,6 +13,7 @@ import "express-async-errors";
 
 import BaseRouter from "./routes";
 import logger from "@shared/Logger";
+import "./apimodels";
 
 const app = express();
 
@@ -45,7 +46,7 @@ const jwtOpts = {
 passport.use(
   new JwtStrategy(jwtOpts, (jwtPayload, done) =>
     sequelize.models.User.findOne({ where: { apiToken: jwtPayload } })
-      .then((user) => (user ? done(null, user) : done(null, false)))
+      .then((user) => (user ? done(null, user.toJSON()) : done(null, false)))
       .catch((err) => done(err, false))
   )
 );
@@ -68,7 +69,6 @@ app.use(
           name: "Authorization",
         },
       },
-      // Models can be defined here
     },
   })
 );

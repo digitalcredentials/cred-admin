@@ -6,32 +6,26 @@ import {
   NOT_FOUND,
   OK,
 } from "http-status-codes";
-import { ParamsDictionary } from "express-serve-static-core";
 import passport from "passport";
-import * as Joi from "@hapi/joi";
+import * as Joi from "joi";
 import {
-  ContainerTypes,
   ValidatedRequest,
   ValidatedRequestSchema,
   createValidator,
 } from "express-joi-validation";
 import sequelize from "../sequelize";
-import "joi-extract-type";
 
 import {
   ApiPath,
   ApiOperationGet,
-  SwaggerDefinitionConstant,
+  ApiOperationPost,
 } from "swagger-express-typescript";
 
 const querySchema = Joi.object({
+  id: Joi.number().integer().positive(),
   did: Joi.string(),
   email: Joi.string(),
 });
-
-interface RecipientRequestSchema extends ValidatedRequestSchema {
-  [ContainerTypes.Query]: Joi.extractType<typeof querySchema>;
-}
 
 @ApiPath({
   path: "/api/recipients/",
@@ -51,6 +45,11 @@ export class RecipientsRouter {
       this.validator.query(querySchema),
       this.getRecipient
     );
+    this.router.post(
+      "/",
+      passport.authenticate("jwt", { session: false }),
+      this.createRecipient
+    );
   }
 
   @ApiOperationGet({
@@ -58,24 +57,30 @@ export class RecipientsRouter {
     summary: "Get recipient",
     parameters: {
       query: {
+        id: {
+          name: "id",
+          description: "User id",
+          type: "integer",
+          allowEmptyValue: false,
+        },
         did: {
           name: "did",
           description: "User did",
           type: "string",
-          allowEmptyValue: true,
+          allowEmptyValue: false,
         },
         email: {
           name: "email",
           description: "User email",
           type: "string",
-          allowEmptyValue: true,
+          allowEmptyValue: false,
         },
       },
     },
     responses: {
       200: {
         description: "Success",
-        type: SwaggerDefinitionConstant.Response.Type.ARRAY,
+        type: "Recipient",
         model: "Recipient",
       },
     },
@@ -84,11 +89,12 @@ export class RecipientsRouter {
     },
   })
   getRecipient(
-    req: ValidatedRequest<RecipientRequestSchema>,
+    req: ValidatedRequest<ValidatedRequestSchema>,
     res: Response
   ): void {
     const where = {
       where: {
+        ...(req.query.id ? { id: req.query.id } : null),
         ...(req.query.did ? { did: req.query.did } : null),
         ...(req.query.email ? { email: req.query.email } : null),
       },
@@ -100,12 +106,40 @@ export class RecipientsRouter {
     sequelize.models.Recipient.findOne(where)
       .then((recipient) =>
         recipient
-          ? res.status(OK).json(recipient)
+          ? res.status(OK).json(recipient.toJSON())
           : res.status(NOT_FOUND).send()
       )
       .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
   }
 
+  @ApiOperationPost({
+    description: "Create recipient",
+    summary: "Create recipient",
+    parameters: {
+      body: {
+        name: "recipient",
+        type: "Recipient",
+        required: true,
+        allowEmptyValue: false,
+        model: "Recipient",
+      },
+    },
+    responses: {
+      200: {
+        description: "Success",
+        type: "Recipient",
+        model: "Recipient",
+      },
+    },
+    security: {
+      apiKeyHeader: [],
+    },
+  })
+  createRecipient(req: Request, res: Response): void {
+    sequelize.models.Recipient.create(req.body)
+      .then((recipient) => res.status(CREATED).json(recipient.toJSON()))
+      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+  }
   getRouter(): Router {
     return this.router;
   }
