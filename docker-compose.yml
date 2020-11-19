@@ -24,7 +24,7 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - $HOME/certs:/etc/nginx/certs
 
-  cert-admin:
+  cred-admin:
     build: .
     environment:
       CA_DB_CONNECTION_URL: 'postgres://credadmin:admin_cred_access@db:5432/credadmin'
