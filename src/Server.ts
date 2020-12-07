@@ -45,7 +45,10 @@ const jwtOpts = {
 };
 passport.use(
   new JwtStrategy(jwtOpts, (jwtPayload, done) =>
-    sequelize.models.User.findOne({ where: { apiToken: jwtPayload } })
+    sequelize.models.User.findOne({
+      where: { apiToken: jwtPayload },
+      include: sequelize.models.Group,
+    })
       .then((user) => (user ? done(null, user.toJSON()) : done(null, false)))
       .catch((err) => done(err, false))
   )
