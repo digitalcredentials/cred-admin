@@ -11,7 +11,7 @@ services:
         POSTGRES_DB: credadmin
     labels:
       - "traefik.tcp.services.postgres.loadbalancer.server.port=5432"
-      - "traefik.tcp.routers.whoami.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.postgres.rule=HostSNI(`*`)"
       - "traefik.tcp.routers.postgres.entrypoints=postgres"
       - "traefik.tcp.routers.postgres.service=postgres"
     healthcheck:
