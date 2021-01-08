@@ -9,28 +9,38 @@ services:
         POSTGRES_USER: credadmin
         POSTGRES_PASSWORD: admin_cred_access
         POSTGRES_DB: credadmin
+    labels:
+      - "traefik.tcp.services.postgres.loadbalancer.server.port=5432"
+      - "traefik.tcp.routers.whoami.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.postgres.entrypoints=postgres"
+      - "traefik.tcp.routers.postgres.service=postgres"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U credadmin -d credadmin"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  nginx-proxy:
-    image: jwilder/nginx-proxy
+  reverse-proxy:
+    image: traefik:v2.0
     ports:
       - "80:80"
       - "443:443"
+      - "5432:5432"
+      - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - $HOME/certs:/etc/nginx/certs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - $HOME/certs:/data/traefik:ro
+      - ./traefik:/etc/traefik:ro
 
   cred-admin:
     build: .
     environment:
       CA_DB_CONNECTION_URL: 'postgres://credadmin:admin_cred_access@db:5432/credadmin'
-      VIRTUAL_HOST: credadmin.127.0.0.1.xip.io
     expose: 
       - "3000"
+    labels:
+      - "traefik.http.routers.whoami.rule=Host(`credadmin.127.0.0.1.xip.io`)"
+      - "traefik.http.routers.whoami.tls=true"
     depends_on:
       db:
         condition: service_healthy
