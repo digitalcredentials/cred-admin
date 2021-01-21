@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import passport from "passport";
@@ -44,14 +45,26 @@ const jwtOpts = {
   secretOrKey: process.env.CA_JWT_SECRET || "secret",
 };
 passport.use(
-  new JwtStrategy(jwtOpts, (jwtPayload, done) =>
-    sequelize.models.User.findOne({
-      where: { apiToken: jwtPayload },
+  new JwtStrategy(jwtOpts, (jwtPayload, done) => {
+    if (!jwtPayload.name || !jwtPayload.apiToken) {
+      return done(null, false);
+    }
+    return sequelize.models.User.findOne({
+      where: { name: jwtPayload.name },
       include: sequelize.models.Group,
     })
-      .then((user) => (user ? done(null, user.toJSON()) : done(null, false)))
-      .catch((err) => done(err, false))
-  )
+      .then((user) => {
+        if (!user) {
+          return done(null, false);
+        }
+        return bcrypt
+          .compare(jwtPayload.apiToken, user.get("apiToken") as string)
+          .then((res: boolean) =>
+            res ? done(null, user.toJSON()) : done(null, false)
+          );
+      })
+      .catch((err) => done(err, false));
+  })
 );
 
 app.use(passport.initialize());

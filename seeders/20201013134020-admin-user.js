@@ -4,13 +4,17 @@
 const { v4: uuidv4 } = require("uuid");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const jwt = require("jsonwebtoken");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const bcrypt = require("bcrypt");
 
 module.exports = {
   up: async (queryInterface) => {
-    const apiToken = uuidv4();
+    const uuid = uuidv4();
+    const apiToken = bcrypt.hashSync(uuid, 10);
+    const name = "Admin";
     await queryInterface.bulkInsert("Users", [
       {
-        name: "Admin",
+        name,
         isAdmin: true,
         apiToken,
         createdAt: new Date(),
@@ -19,7 +23,7 @@ module.exports = {
     ]);
     return console.log(
       `Created Admin user with token: ${jwt.sign(
-        apiToken,
+        { name, apiToken: uuid },
         process.env.CA_JWT_TOKEN || "secret"
       )}`
     );
