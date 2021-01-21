@@ -6,3 +6,5 @@ import { IssuanceModel } from "./issuance.model";
 new IssuanceModel();
 import { GroupModel } from "./group.model";
 new GroupModel();
+import { EnrollmentModel } from "./enrollment.model";
+new EnrollmentModel();

@@ -33,5 +33,5 @@ export class RecipientIssuance extends Model implements RecipientIssuance {
   recipient!: Recipient;
 
   @ForeignKey(() => Issuance)
-  issuance!: Array<Issuance>;
+  issuance!: Issuance;
 }
