@@ -48,7 +48,7 @@ export class IssuancesRouter {
       200: {
         description: "Success",
         type: SwaggerDefinitionConstant.Response.Type.ARRAY,
-        model: "Issuance",
+        model: "IssuanceGet",
       },
     },
     security: {
@@ -93,14 +93,14 @@ export class IssuancesRouter {
         type: "Issuance",
         required: true,
         allowEmptyValue: false,
-        model: "Issuance",
+        model: "IssuancePost",
       },
     },
     responses: {
       200: {
         description: "Success",
         type: "Issuance",
-        model: "Issuance",
+        model: "IssuanceGet",
       },
     },
     security: {

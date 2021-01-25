@@ -81,7 +81,7 @@ export class RecipientsRouter {
       200: {
         description: "Success",
         type: "Recipient",
-        model: "Recipient",
+        model: "RecipientGet",
       },
     },
     security: {
@@ -121,14 +121,14 @@ export class RecipientsRouter {
         type: "Recipient",
         required: true,
         allowEmptyValue: false,
-        model: "Recipient",
+        model: "RecipientPost",
       },
     },
     responses: {
       200: {
         description: "Success",
         type: "Recipient",
-        model: "Recipient",
+        model: "RecipientGet",
       },
     },
     security: {

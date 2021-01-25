@@ -48,7 +48,7 @@ export class CredentialsRouter {
       200: {
         description: "Success",
         type: SwaggerDefinitionConstant.Response.Type.ARRAY,
-        model: "Credential",
+        model: "CredentialGet",
       },
     },
     security: {
@@ -96,14 +96,14 @@ export class CredentialsRouter {
         type: "Credential",
         required: true,
         allowEmptyValue: false,
-        model: "Credential",
+        model: "CredentialPost",
       },
     },
     responses: {
       200: {
         description: "Success",
         type: "Credential",
-        model: "Credential",
+        model: "CredentialGet",
       },
     },
     security: {

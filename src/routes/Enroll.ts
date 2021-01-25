@@ -49,7 +49,7 @@ export class EnrollRouter {
       200: {
         description: "Success",
         type: SwaggerDefinitionConstant.Response.Type.ARRAY,
-        model: "Recipient",
+        model: "RecipientGet",
       },
     },
     security: {
@@ -104,7 +104,7 @@ export class EnrollRouter {
       200: {
         description: "Success",
         type: "Issuance",
-        model: "Issuance",
+        model: "IssuanceGet",
       },
     },
     security: {
