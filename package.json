@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@types/bcrypt": "^3.0.0",
+    "@types/uuid": "^8.3.0",
     "bcrypt": "^5.0.0",
     "command-line-args": "^5.1.1",
     "compression": "^1.7.4",
@@ -52,6 +53,7 @@
     "swagger-express-typescript": "^1.0.2",
     "swagger-ui-dist": "^3.35.0",
     "tslib": "^2.0.1",
+    "uuid": "^8.3.2",
     "winston": "^3.3.3"
   },
   "devDependencies": {

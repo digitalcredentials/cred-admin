@@ -2,14 +2,25 @@ import { ApiModel, ApiModelProperty } from "swagger-express-typescript";
 
 @ApiModel({
   description: "A group",
-  name: "Group",
+  name: "GroupGet",
 })
-export class GroupModel {
+export class GroupGetModel {
   @ApiModelProperty({
-    required: false,
+    required: true,
   })
   id!: number;
 
+  @ApiModelProperty({
+    required: true,
+  })
+  name!: string;
+}
+
+@ApiModel({
+  description: "A group",
+  name: "GroupPost",
+})
+export class GroupPostModel {
   @ApiModelProperty({
     required: true,
   })
