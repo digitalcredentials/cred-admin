@@ -38,7 +38,7 @@ export class GroupRouter {
       this.createGroup
     );
     this.router.post(
-      "/:id",
+      "/:gid/:uid",
       passport.authenticate("jwt", { session: false }),
       this.addUserToGroup
     );
@@ -102,16 +102,15 @@ export class GroupRouter {
   @ApiOperationPost({
     description: "Add User to Group",
     summary: "Add a User to a Group",
+    path: "{gid}/{uid}",
     parameters: {
-      body: {
-        name: "user",
-        type: SwaggerDefinitionConstant.Parameter.Type.NUMBER,
-        required: true,
-        allowEmptyValue: false,
-      },
       path: {
-        id: {
-          name: "groupId",
+        gid: {
+          type: SwaggerDefinitionConstant.Parameter.Type.NUMBER,
+          required: true,
+          allowEmptyValue: false,
+        },
+        uid: {
           type: SwaggerDefinitionConstant.Parameter.Type.NUMBER,
           required: true,
           allowEmptyValue: false,
@@ -129,21 +128,22 @@ export class GroupRouter {
   })
   addUserToGroup(req: Request, res: Response): void {
     if (req.user && req.user.isAdmin) {
-      Group.findOne({ where: { id: req.params.id } })
+      Group.findOne({ where: { id: req.params.gid } })
         .then((group) =>
           User.findOne({
-            where: { id: req.body.user },
+            where: { id: req.params.uid },
           }).then((user) =>
             group && user
-              ? group.$add("User", user).then(() => res.status(OK))
-              : res.status(NOT_FOUND)
+              ? group.$add("User", user).then(() => res.status(OK).send())
+              : res.status(NOT_FOUND).send()
           )
         )
         .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
     } else {
-      res.status(UNAUTHORIZED);
+      res.status(UNAUTHORIZED).send();
     }
   }
+
   getRouter(): Router {
     return this.router;
   }
