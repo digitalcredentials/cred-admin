@@ -1,11 +1,14 @@
 import { Request, Response, Router } from "express";
 import {
   CREATED,
+  OK,
+  NOT_FOUND,
   UNAUTHORIZED,
   INTERNAL_SERVER_ERROR,
 } from "http-status-codes";
 import passport from "passport";
-import sequelize from "../sequelize";
+import { User } from "../models/User";
+import { Group } from "../models/Group";
 
 import {
   ApiPath,
@@ -33,6 +36,11 @@ export class GroupRouter {
       "/",
       passport.authenticate("jwt", { session: false }),
       this.createGroup
+    );
+    this.router.post(
+      "/:id",
+      passport.authenticate("jwt", { session: false }),
+      this.addUserToGroup
     );
   }
 
@@ -83,7 +91,7 @@ export class GroupRouter {
   })
   createGroup(req: Request, res: Response): void {
     if (req.user && req.user.isAdmin) {
-      sequelize.models.Group.create(req.body)
+      Group.create(req.body)
         .then((group) => res.status(CREATED).json(group.toJSON()))
         .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
     } else {
@@ -91,6 +99,51 @@ export class GroupRouter {
     }
   }
 
+  @ApiOperationPost({
+    description: "Add User to Group",
+    summary: "Add a User to a Group",
+    parameters: {
+      body: {
+        name: "user",
+        type: SwaggerDefinitionConstant.Parameter.Type.NUMBER,
+        required: true,
+        allowEmptyValue: false,
+      },
+      path: {
+        id: {
+          name: "groupId",
+          type: SwaggerDefinitionConstant.Parameter.Type.NUMBER,
+          required: true,
+          allowEmptyValue: false,
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Success",
+      },
+    },
+    security: {
+      apiKeyHeader: [],
+    },
+  })
+  addUserToGroup(req: Request, res: Response): void {
+    if (req.user && req.user.isAdmin) {
+      Group.findOne({ where: { id: req.params.id } })
+        .then((group) =>
+          User.findOne({
+            where: { id: req.body.user },
+          }).then((user) =>
+            group && user
+              ? group.$add("User", user).then(() => res.status(OK))
+              : res.status(NOT_FOUND)
+          )
+        )
+        .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+    } else {
+      res.status(UNAUTHORIZED);
+    }
+  }
   getRouter(): Router {
     return this.router;
   }
