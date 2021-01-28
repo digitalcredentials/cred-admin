@@ -2,15 +2,15 @@ import { Request, Response, Router } from "express";
 import {
   BAD_REQUEST,
   CREATED,
-  FORBIDDEN,
+  UNAUTHORIZED,
   INTERNAL_SERVER_ERROR,
   NOT_FOUND,
   OK,
 } from "http-status-codes";
 import passport from "passport";
-import sequelize from "../sequelize";
-import type { Model } from "sequelize";
-import type { Group } from "../models/Group";
+import { Group } from "../models/Group";
+import { Issuance } from "../models/Issuance";
+import { Credential } from "../models/Credential";
 
 import {
   ApiPath,
@@ -57,29 +57,30 @@ export class IssuancesRouter {
   })
   getIssuances(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(FORBIDDEN);
+      res.status(UNAUTHORIZED);
       return;
     }
     if (!req.params.credentialId) {
       res.status(BAD_REQUEST);
       return;
     }
-    sequelize.models.Issuance.findAll({
+    Issuance.findAll({
       where: { credentialid: req.params.credentialId },
-      include: sequelize.models.Credential,
+      include: Credential,
     })
-      .then((issuances: Array<Model>) => {
-        const cred = issuances[0].get("Credential") as Model;
+      .then((issuances) => {
+        if (!issuances || issuances.length === 0) {
+          res.status(NOT_FOUND);
+          return;
+        }
         if (!req.user.isAdmin) {
           const groups = req.user.groups;
-          if (!groups || !groups.includes(cred.get("groupid"))) {
-            res.status(FORBIDDEN);
+          if (!groups || !groups.includes(issuances[0].credential.groupid)) {
+            res.status(UNAUTHORIZED);
             return;
           }
         }
-        issuances
-          ? res.status(OK).json(issuances.map((issuance) => issuance.toJSON()))
-          : res.status(NOT_FOUND).send();
+        res.status(OK).json(issuances.map((issuance) => issuance.toJSON()));
       })
       .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
   }
@@ -109,7 +110,7 @@ export class IssuancesRouter {
   })
   createIssuance(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(FORBIDDEN);
+      res.status(UNAUTHORIZED);
       return;
     }
     if (!req.user.isAdmin) {
@@ -120,14 +121,15 @@ export class IssuancesRouter {
         !req.body.groupid ||
         !groups.map((group: Group) => group.id).includes(req.body.groupid)
       ) {
-        res.status(FORBIDDEN);
+        res.status(UNAUTHORIZED);
         return;
       }
     }
-    sequelize.models.Issuance.create(req.body)
+    Issuance.create(req.body)
       .then((issuance) => res.status(CREATED).json(issuance.toJSON()))
       .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
   }
+
   getRouter(): Router {
     return this.router;
   }

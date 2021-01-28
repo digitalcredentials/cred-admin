@@ -2,7 +2,6 @@ import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import passport from "passport";
-import sequelize from "./sequelize";
 import helmet from "helmet";
 
 import * as swagger from "swagger-express-typescript";
@@ -12,6 +11,10 @@ import { BAD_REQUEST } from "http-status-codes";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import "express-async-errors";
 
+// initialize sequelize before pulling in any models
+import "./sequelize";
+import { User } from "./models/User";
+import { Group } from "./models/Group";
 import BaseRouter from "./routes";
 import logger from "@shared/Logger";
 import "./apimodels";
@@ -49,9 +52,9 @@ passport.use(
     if (!jwtPayload.name || !jwtPayload.apiToken) {
       return done(null, false);
     }
-    return sequelize.models.User.findOne({
+    return User.findOne({
       where: { name: jwtPayload.name },
-      include: sequelize.models.Group,
+      include: Group,
     })
       .then((user) => {
         if (!user) {

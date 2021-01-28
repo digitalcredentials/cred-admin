@@ -7,10 +7,10 @@ import {
   OK,
 } from "http-status-codes";
 import passport from "passport";
-import sequelize from "../sequelize";
 import { Op } from "sequelize";
-import type { FindOptions, Model } from "sequelize";
-import type { Group } from "../models/Group";
+import { Group } from "../models/Group";
+import { Credential } from "../models/Credential";
+import type { FindOptions } from "sequelize";
 
 import {
   ApiPath,
@@ -76,8 +76,8 @@ export class CredentialsRouter {
         return;
       }
     }
-    sequelize.models.Credential.findAll(where)
-      .then((credentials: Array<Model>) =>
+    Credential.findAll(where)
+      .then((credentials) =>
         credentials
           ? res
               .status(OK)
@@ -127,7 +127,7 @@ export class CredentialsRouter {
         return;
       }
     }
-    sequelize.models.Credential.create(req.body)
+    Credential.create(req.body)
       .then((credential) => res.status(CREATED).json(credential.toJSON()))
       .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
   }

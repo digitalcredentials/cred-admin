@@ -9,7 +9,7 @@ import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import passport from "passport";
 import { createValidator } from "express-joi-validation";
-import sequelize from "../sequelize";
+import { User } from "../models/User";
 
 import {
   ApiPath,
@@ -67,7 +67,7 @@ export class UsersRouter {
           isAdmin: req.body.isAdmin,
           apiToken,
         };
-        sequelize.models.User.create(toCreate)
+        User.create(toCreate)
           .then((user) =>
             res
               .status(CREATED)

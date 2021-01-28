@@ -3,6 +3,7 @@ import {
   Column,
   Model,
   AllowNull,
+  BelongsTo,
   BelongsToMany,
   ForeignKey,
 } from "sequelize-typescript";
@@ -21,6 +22,9 @@ export class Issuance extends Model implements Issuance {
 
   @ForeignKey(() => Credential)
   credentialid!: number;
+
+  @BelongsTo(() => Credential)
+  credential!: Credential;
 
   @BelongsToMany(() => Recipient, () => RecipientIssuance)
   recipients?: Array<Recipient>;

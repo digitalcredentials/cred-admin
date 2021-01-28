@@ -13,7 +13,7 @@ import {
   ValidatedRequestSchema,
   createValidator,
 } from "express-joi-validation";
-import sequelize from "../sequelize";
+import { Recipient } from "../models/Recipient";
 
 import {
   ApiPath,
@@ -103,7 +103,7 @@ export class RecipientsRouter {
       res.status(BAD_REQUEST).send("Need an identifier to find user");
       return;
     }
-    sequelize.models.Recipient.findOne(where)
+    Recipient.findOne(where)
       .then((recipient) =>
         recipient
           ? res.status(OK).json(recipient.toJSON())
@@ -136,10 +136,11 @@ export class RecipientsRouter {
     },
   })
   createRecipient(req: Request, res: Response): void {
-    sequelize.models.Recipient.create(req.body)
+    Recipient.create(req.body)
       .then((recipient) => res.status(CREATED).json(recipient.toJSON()))
       .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
   }
+
   getRouter(): Router {
     return this.router;
   }

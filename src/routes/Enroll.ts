@@ -2,16 +2,18 @@ import { Request, Response, Router } from "express";
 import {
   BAD_REQUEST,
   CREATED,
-  FORBIDDEN,
+  UNAUTHORIZED,
   INTERNAL_SERVER_ERROR,
   NOT_FOUND,
   OK,
 } from "http-status-codes";
 import passport from "passport";
-import sequelize from "../sequelize";
-import type { Model } from "sequelize";
+import { RecipientIssuance } from "../models/RecipientIssuance";
+import { Credential } from "../models/Credential";
+import { Recipient } from "../models/Recipient";
+import { Issuance } from "../models/Issuance";
+
 import type { EnrollmentModel } from "../apimodels/enrollment.model";
-import type { RecipientIssuance } from "../models/RecipientIssuance";
 
 import {
   ApiPath,
@@ -58,27 +60,30 @@ export class EnrollRouter {
   })
   getEnrolled(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(FORBIDDEN);
+      res.status(UNAUTHORIZED);
       return;
     }
     if (!req.params.credentialId) {
       res.status(BAD_REQUEST);
       return;
     }
-    sequelize.models.Issuance.findAll({
+    Issuance.findOne({
       where: { credentialid: req.params.credentialId },
-      include: [sequelize.models.Credential, sequelize.models.Recipients],
+      include: [Credential, Recipient],
     })
-      .then((issuances: Array<Model>) => {
-        const cred = issuances[0].get("Credential") as Model;
+      .then((issuance) => {
+        if (!issuance) {
+          res.status(NOT_FOUND);
+          return;
+        }
         if (!req.user.isAdmin) {
           const groups = req.user.groups;
-          if (!groups || !groups.includes(cred.get("groupid"))) {
-            res.status(FORBIDDEN);
+          if (!groups || !groups.includes(issuance.credential.groupid)) {
+            res.status(UNAUTHORIZED);
             return;
           }
         }
-        const recipients = issuances[0].get("Recipients") as Array<Model>;
+        const recipients = issuance.recipients;
         recipients
           ? res
               .status(OK)
@@ -113,24 +118,23 @@ export class EnrollRouter {
   })
   enrollRecipients(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(FORBIDDEN);
+      res.status(UNAUTHORIZED);
       return;
     }
     if (!req.user.isAdmin) {
       // Non-admins can only enroll users to issuances that they created
-      sequelize.models.Issuance.findOne({
+      Issuance.findOne({
         where: { issuanceid: req.params.issuanceId },
-        include: sequelize.models.Credential,
+        include: Credential,
       }).then((issuance) => {
         if (issuance === null) {
           res.status(NOT_FOUND);
           return;
         }
-        const cred = issuance.get("Credential") as Model;
         if (!req.user.isAdmin) {
           const groups = req.user.groups;
-          if (!groups || !groups.includes(cred.get("groupid"))) {
-            res.status(FORBIDDEN);
+          if (!groups || !groups.includes(issuance.credential.get("groupid"))) {
+            res.status(UNAUTHORIZED);
             return;
           }
         }
@@ -143,7 +147,7 @@ export class EnrollRouter {
         ...(enrollment.isApproved ? { approvedAt: new Date() } : null),
         issuance: req.params.issuanceId,
       };
-      sequelize.models.RecipientIssuance.create(ri)
+      RecipientIssuance.create(ri)
         .then((issuance) => res.status(CREATED).json(issuance.toJSON()))
         .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
     });
