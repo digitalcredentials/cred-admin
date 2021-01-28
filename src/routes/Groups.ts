@@ -60,7 +60,7 @@ export class GroupRouter {
   })
   getGroups(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(UNAUTHORIZED);
+      res.status(UNAUTHORIZED).send();
       return;
     }
     res.send(req.user.groups);
@@ -95,7 +95,7 @@ export class GroupRouter {
         .then((group) => res.status(CREATED).json(group.toJSON()))
         .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
     } else {
-      res.status(UNAUTHORIZED);
+      res.status(UNAUTHORIZED).send();
     }
   }
 

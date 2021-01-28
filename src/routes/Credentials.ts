@@ -57,7 +57,7 @@ export class CredentialsRouter {
   })
   getCredentials(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(FORBIDDEN);
+      res.status(FORBIDDEN).send();
       return;
     }
     const where = {} as FindOptions;
@@ -72,7 +72,7 @@ export class CredentialsRouter {
           [Op.or]: groups.map((group: Group) => ({ groupid: group.id })),
         };
       } catch (err) {
-        res.status(INTERNAL_SERVER_ERROR);
+        res.status(INTERNAL_SERVER_ERROR).send();
         return;
       }
     }
@@ -112,7 +112,7 @@ export class CredentialsRouter {
   })
   createCredential(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(FORBIDDEN);
+      res.status(FORBIDDEN).send();
       return;
     }
     if (!req.user.isAdmin) {
@@ -123,7 +123,7 @@ export class CredentialsRouter {
         !req.body.groupid ||
         !groups.map((group: Group) => group.id).includes(req.body.groupid)
       ) {
-        res.status(FORBIDDEN);
+        res.status(FORBIDDEN).send();
         return;
       }
     }

@@ -81,7 +81,7 @@ export class UsersRouter {
           .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
       });
     } else {
-      res.status(UNAUTHORIZED);
+      res.status(UNAUTHORIZED).send();
     }
   }
 

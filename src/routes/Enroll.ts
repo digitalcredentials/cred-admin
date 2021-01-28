@@ -60,11 +60,11 @@ export class EnrollRouter {
   })
   getEnrolled(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(UNAUTHORIZED);
+      res.status(UNAUTHORIZED).send();
       return;
     }
     if (!req.params.credentialId) {
-      res.status(BAD_REQUEST);
+      res.status(BAD_REQUEST).send();
       return;
     }
     Issuance.findOne({
@@ -73,13 +73,13 @@ export class EnrollRouter {
     })
       .then((issuance) => {
         if (!issuance) {
-          res.status(NOT_FOUND);
+          res.status(NOT_FOUND).send();
           return;
         }
         if (!req.user.isAdmin) {
           const groups = req.user.groups;
           if (!groups || !groups.includes(issuance.credential.groupid)) {
-            res.status(UNAUTHORIZED);
+            res.status(UNAUTHORIZED).send();
             return;
           }
         }
@@ -118,7 +118,7 @@ export class EnrollRouter {
   })
   enrollRecipients(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(UNAUTHORIZED);
+      res.status(UNAUTHORIZED).send();
       return;
     }
     if (!req.user.isAdmin) {
@@ -128,13 +128,13 @@ export class EnrollRouter {
         include: Credential,
       }).then((issuance) => {
         if (issuance === null) {
-          res.status(NOT_FOUND);
+          res.status(NOT_FOUND).send();
           return;
         }
         if (!req.user.isAdmin) {
           const groups = req.user.groups;
           if (!groups || !groups.includes(issuance.credential.get("groupid"))) {
-            res.status(UNAUTHORIZED);
+            res.status(UNAUTHORIZED).send();
             return;
           }
         }

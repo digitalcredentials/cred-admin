@@ -57,11 +57,11 @@ export class IssuancesRouter {
   })
   getIssuances(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(UNAUTHORIZED);
+      res.status(UNAUTHORIZED).send();
       return;
     }
     if (!req.params.credentialId) {
-      res.status(BAD_REQUEST);
+      res.status(BAD_REQUEST).send();
       return;
     }
     Issuance.findAll({
@@ -70,13 +70,13 @@ export class IssuancesRouter {
     })
       .then((issuances) => {
         if (!issuances || issuances.length === 0) {
-          res.status(NOT_FOUND);
+          res.status(NOT_FOUND).send();
           return;
         }
         if (!req.user.isAdmin) {
           const groups = req.user.groups;
           if (!groups || !groups.includes(issuances[0].credential.groupid)) {
-            res.status(UNAUTHORIZED);
+            res.status(UNAUTHORIZED).send();
             return;
           }
         }
