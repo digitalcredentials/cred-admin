@@ -125,7 +125,7 @@ export class RecipientsRouter {
       },
     },
     responses: {
-      200: {
+      201: {
         description: "Success",
         type: "Recipient",
         model: "RecipientGet",

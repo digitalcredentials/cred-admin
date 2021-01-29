@@ -65,7 +65,7 @@ export class CredentialsRouter {
       try {
         const groups = req.user.groups;
         if (!groups) {
-          res.send({});
+          res.send([]);
           return;
         }
         where.where = {
@@ -100,7 +100,7 @@ export class CredentialsRouter {
       },
     },
     responses: {
-      200: {
+      201: {
         description: "Success",
         type: "Credential",
         model: "CredentialGet",

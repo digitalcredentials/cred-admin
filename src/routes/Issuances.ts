@@ -106,7 +106,7 @@ export class IssuancesRouter {
       },
     },
     responses: {
-      200: {
+      201: {
         description: "Success",
         type: "Issuance",
         model: "IssuanceGet",
