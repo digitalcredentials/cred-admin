@@ -30,7 +30,7 @@ export class IssuancesRouter {
   constructor() {
     this.router = Router();
     this.router.get(
-      "/:credentialId",
+      "/",
       passport.authenticate("jwt", { session: false }),
       this.getIssuances
     );
@@ -88,6 +88,7 @@ export class IssuancesRouter {
   @ApiOperationPost({
     description: "Create Issuance",
     summary: "Create Issuance",
+    path: "{credentialId}",
     parameters: {
       body: {
         name: "Issuance",
@@ -95,6 +96,13 @@ export class IssuancesRouter {
         required: true,
         allowEmptyValue: false,
         model: "IssuancePost",
+      },
+      path: {
+        credentialId: {
+          type: SwaggerDefinitionConstant.Parameter.Type.NUMBER,
+          required: true,
+          allowEmptyValue: false,
+        },
       },
     },
     responses: {
@@ -110,23 +118,35 @@ export class IssuancesRouter {
   })
   createIssuance(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(UNAUTHORIZED);
+      res.status(UNAUTHORIZED).send();
       return;
     }
-    if (!req.user.isAdmin) {
-      // Non-admins can only create a cred in a group they belong to
-      const groups = req.user.groups;
-      if (
-        !groups ||
-        !req.body.groupid ||
-        !groups.map((group: Group) => group.id).includes(req.body.groupid)
-      ) {
-        res.status(UNAUTHORIZED);
-        return;
-      }
-    }
-    Issuance.create(req.body)
-      .then((issuance) => res.status(CREATED).json(issuance.toJSON()))
+    Credential.findOne({
+      where: { id: req.params.credentialId },
+    })
+      .then((cred) => {
+        if (!cred) {
+          res.status(NOT_FOUND).send();
+          return;
+        }
+
+        const groups = req.user.groups;
+        if (
+          !req.user.isAdmin &&
+          (!groups ||
+            !cred.groupid ||
+            !groups.map((group: Group) => group.id).includes(cred.groupid))
+        ) {
+          // Non-admins can only create an issuance on a cred that belongs to their group
+          res.status(UNAUTHORIZED).send();
+          return;
+        } else {
+          req.body.issueDate = new Date(req.body.issueDate);
+          cred
+            .$create("issuance", req.body)
+            .then((issuance) => res.status(CREATED).json(issuance.toJSON()));
+        }
+      })
       .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
   }
 

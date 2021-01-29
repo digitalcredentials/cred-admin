@@ -42,9 +42,4 @@ export class IssuancePostModel {
     format: "date",
   })
   issueDate!: string;
-
-  @ApiModelProperty({
-    required: true,
-  })
-  credentialid!: number;
 }

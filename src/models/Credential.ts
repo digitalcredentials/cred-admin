@@ -6,6 +6,7 @@ import {
   Model,
   ForeignKey,
   HasMany,
+  BelongsTo,
 } from "sequelize-typescript";
 import { Group } from "./Group";
 import { Issuance } from "./Issuance";
@@ -22,6 +23,9 @@ export class Credential extends Model implements Credential {
   @ForeignKey(() => Group)
   @Column
   groupid!: number;
+
+  @BelongsTo(() => Group)
+  group!: Group;
 
   @HasMany(() => Issuance)
   issuances?: Array<Issuance>;
