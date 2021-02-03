@@ -13,6 +13,7 @@ import { Credential } from "../models/Credential";
 import { Recipient } from "../models/Recipient";
 import { Issuance } from "../models/Issuance";
 
+import type { Group } from "../models/Group";
 import type { EnrollmentModel } from "../apimodels/enrollment.model";
 
 import {
@@ -23,7 +24,7 @@ import {
 } from "swagger-express-typescript";
 
 @ApiPath({
-  path: "/api/enroll/",
+  path: "/api/enroll/{issuanceId}",
   name: "Enroll",
   security: { apiKeyHeader: [] },
 })
@@ -33,12 +34,12 @@ export class EnrollRouter {
   constructor() {
     this.router = Router();
     this.router.get(
-      "/:credentialId",
+      "/:issuanceId",
       passport.authenticate("jwt", { session: false }),
       this.getEnrolled
     );
     this.router.post(
-      "/:credentialId",
+      "/:issuanceId",
       passport.authenticate("jwt", { session: false }),
       this.enrollRecipients
     );
@@ -47,6 +48,15 @@ export class EnrollRouter {
   @ApiOperationGet({
     description: "Get Enrolled",
     summary: "Get Enrolled Recipients",
+    parameters: {
+      path: {
+        issuanceId: {
+          type: SwaggerDefinitionConstant.Parameter.Type.NUMBER,
+          required: true,
+          allowEmptyValue: false,
+        },
+      },
+    },
     responses: {
       200: {
         description: "Success",
@@ -63,12 +73,12 @@ export class EnrollRouter {
       res.status(UNAUTHORIZED).send();
       return;
     }
-    if (!req.params.credentialId) {
+    if (!req.params.issuanceId) {
       res.status(BAD_REQUEST).send();
       return;
     }
     Issuance.findOne({
-      where: { credentialid: req.params.credentialId },
+      where: { id: req.params.issuanceId },
       include: [Credential, Recipient],
     })
       .then((issuance) => {
@@ -77,8 +87,11 @@ export class EnrollRouter {
           return;
         }
         if (!req.user.isAdmin) {
-          const groups = req.user.groups;
-          if (!groups || !groups.includes(issuance.credential.groupid)) {
+          const groupids = req.user.groups.map((group: Group) => group.id);
+          if (
+            !req.user.groups ||
+            !groupids.includes(issuance.credential.groupid)
+          ) {
             res.status(UNAUTHORIZED).send();
             return;
           }
@@ -104,6 +117,13 @@ export class EnrollRouter {
         allowEmptyValue: false,
         model: "Enrollment",
       },
+      path: {
+        issuanceId: {
+          type: SwaggerDefinitionConstant.Parameter.Type.NUMBER,
+          required: true,
+          allowEmptyValue: false,
+        },
+      },
     },
     responses: {
       201: {
@@ -121,36 +141,39 @@ export class EnrollRouter {
       res.status(UNAUTHORIZED).send();
       return;
     }
-    if (!req.user.isAdmin) {
-      // Non-admins can only enroll users to issuances that they created
-      Issuance.findOne({
-        where: { issuanceid: req.params.issuanceId },
-        include: Credential,
-      }).then((issuance) => {
+    Issuance.findOne({
+      where: { id: req.params.issuanceId },
+      include: Credential,
+    })
+      .then((issuance) => {
         if (issuance === null) {
           res.status(NOT_FOUND).send();
           return;
         }
         if (!req.user.isAdmin) {
-          const groups = req.user.groups;
-          if (!groups || !groups.includes(issuance.credential.get("groupid"))) {
+          // Non-admins can only enroll users to issuances that they created
+          const groupids = req.user.groups.map((group: Group) => group.id);
+          if (
+            !req.user.groups ||
+            !groupids.includes(issuance.credential.groupid)
+          ) {
             res.status(UNAUTHORIZED).send();
             return;
           }
         }
-      });
-    }
-    req.body.forEach((enrollment: EnrollmentModel) => {
-      const ri = {
-        recipient: enrollment.recipientId,
-        isApproved: enrollment.isApproved,
-        ...(enrollment.isApproved ? { approvedAt: new Date() } : null),
-        issuance: req.params.issuanceId,
-      };
-      RecipientIssuance.create(ri)
-        .then((issuance) => res.status(CREATED).json(issuance.toJSON()))
-        .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
-    });
+        req.body.forEach((enrollment: EnrollmentModel) => {
+          const ri = {
+            recipient: enrollment.recipientId,
+            isApproved: enrollment.isApproved,
+            ...(enrollment.isApproved ? { approvedAt: new Date() } : null),
+            issuance: req.params.issuanceId,
+          };
+          RecipientIssuance.create(ri).then((issuance) =>
+            res.status(CREATED).json(issuance.toJSON())
+          );
+        });
+      })
+      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
   }
   getRouter(): Router {
     return this.router;

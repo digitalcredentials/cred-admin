@@ -4,6 +4,7 @@ import {
   Model,
   Unique,
   ForeignKey,
+  BelongsTo,
   Default,
 } from "sequelize-typescript";
 import { Recipient } from "./Recipient";
@@ -11,14 +12,14 @@ import { Issuance } from "./Issuance";
 
 @Table
 export class RecipientIssuance extends Model implements RecipientIssuance {
-  @Default({ value: false })
+  @Default(false)
   @Column
   isIssued?: boolean;
 
   @Column
   issuedAt?: Date;
 
-  @Default({ value: false })
+  @Default(false)
   @Column
   isApproved?: boolean;
 
@@ -30,8 +31,16 @@ export class RecipientIssuance extends Model implements RecipientIssuance {
   awardId?: string;
 
   @ForeignKey(() => Recipient)
+  @Column
+  recipientId!: number;
+
+  @BelongsTo(() => Recipient)
   recipient!: Recipient;
 
   @ForeignKey(() => Issuance)
+  @Column
+  issuanceId!: number;
+
+  @BelongsTo(() => Issuance)
   issuance!: Issuance;
 }

@@ -73,7 +73,7 @@ export class UsersRouter {
               .status(CREATED)
               .json(
                 jwt.sign(
-                  { name: user.get("name"), apiToken: uuid },
+                  { name: user.name, apiToken: uuid },
                   process.env.CA_JWT_TOKEN || "secret"
                 )
               )

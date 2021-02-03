@@ -20,7 +20,7 @@ import {
 } from "swagger-express-typescript";
 
 @ApiPath({
-  path: "/api/issuances/",
+  path: "/api/issuances/{credentialId}",
   name: "Issuance",
   security: { apiKeyHeader: [] },
 })
@@ -30,7 +30,7 @@ export class IssuancesRouter {
   constructor() {
     this.router = Router();
     this.router.get(
-      "/",
+      "/:credentialId",
       passport.authenticate("jwt", { session: false }),
       this.getIssuances
     );
@@ -44,6 +44,15 @@ export class IssuancesRouter {
   @ApiOperationGet({
     description: "Get Issuances",
     summary: "Get Issuances",
+    parameters: {
+      path: {
+        credentialId: {
+          type: SwaggerDefinitionConstant.Parameter.Type.NUMBER,
+          required: true,
+          allowEmptyValue: false,
+        },
+      },
+    },
     responses: {
       200: {
         description: "Success",
@@ -75,7 +84,12 @@ export class IssuancesRouter {
         }
         if (!req.user.isAdmin) {
           const groups = req.user.groups;
-          if (!groups || !groups.includes(issuances[0].credential.groupid)) {
+          if (
+            !groups ||
+            !groups
+              .map((group: Group) => group.id)
+              .includes(issuances[0].credential.groupid)
+          ) {
             res.status(UNAUTHORIZED).send();
             return;
           }
@@ -88,7 +102,6 @@ export class IssuancesRouter {
   @ApiOperationPost({
     description: "Create Issuance",
     summary: "Create Issuance",
-    path: "{credentialId}",
     parameters: {
       body: {
         name: "Issuance",
