@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node build.js && tsc --build tsconfig.prod.json",
     "lint": "eslint --fix './**/*.ts'",
-    "start": "sequelize-cli --config .sequelize.js db:migrate && sequelize-cli --config .sequelize.js db:seed:all && node -r module-alias/register ./dist",
+    "start": "until sequelize-cli --config .sequelize.js db:migrate; do sleep 1; done && until sequelize-cli --config .sequelize.js db:seed:all; do sleep 1; done && node -r module-alias/register ./dist",
     "start:dev": "nodemon"
   },
   "nodemonConfig": {
