@@ -60,8 +60,7 @@ export class EnrollRouter {
     responses: {
       200: {
         description: "Success",
-        type: SwaggerDefinitionConstant.Response.Type.ARRAY,
-        model: "RecipientGet",
+        model: "IssuanceFullGet",
       },
     },
     security: {
@@ -98,9 +97,7 @@ export class EnrollRouter {
         }
         const recipients = issuance.recipients;
         recipients
-          ? res
-              .status(OK)
-              .json(recipients.map((recipient) => recipient.toJSON()))
+          ? res.status(OK).json(issuance.toJSON())
           : res.status(NOT_FOUND).send();
       })
       .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));

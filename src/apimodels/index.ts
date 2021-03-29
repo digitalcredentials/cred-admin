@@ -4,8 +4,13 @@ new RecipientPostModel();
 import { CredentialGetModel, CredentialPostModel } from "./credential.model";
 new CredentialGetModel();
 new CredentialPostModel();
-import { IssuanceGetModel, IssuancePostModel } from "./issuance.model";
+import {
+  IssuanceGetModel,
+  IssuanceFullGetModel,
+  IssuancePostModel,
+} from "./issuance.model";
 new IssuanceGetModel();
+new IssuanceFullGetModel();
 new IssuancePostModel();
 import { GroupGetModel, GroupPostModel } from "./group.model";
 new GroupGetModel();
