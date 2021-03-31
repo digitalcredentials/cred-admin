@@ -8,13 +8,12 @@ import {
   OK,
 } from "http-status-codes";
 import passport from "passport";
-import { RecipientIssuance } from "../models/RecipientIssuance";
+import { Op } from "sequelize";
 import { Credential } from "../models/Credential";
 import { Recipient } from "../models/Recipient";
 import { Issuance } from "../models/Issuance";
 
 import type { Group } from "../models/Group";
-import type { EnrollmentModel } from "../apimodels/enrollment.model";
 
 import {
   ApiPath,
@@ -95,8 +94,7 @@ export class EnrollRouter {
             return;
           }
         }
-        const recipients = issuance.recipients;
-        recipients
+        issuance
           ? res.status(OK).json(issuance.toJSON())
           : res.status(NOT_FOUND).send();
       })
@@ -125,8 +123,6 @@ export class EnrollRouter {
     responses: {
       201: {
         description: "Success",
-        type: "Issuance",
-        model: "IssuanceGet",
       },
     },
     security: {
@@ -158,15 +154,25 @@ export class EnrollRouter {
             return;
           }
         }
-        req.body.forEach((enrollment: EnrollmentModel) => {
-          const ri = {
-            recipient: enrollment.recipientId,
-            isApproved: enrollment.isApproved,
-            ...(enrollment.isApproved ? { approvedAt: new Date() } : null),
-            issuance: req.params.issuanceId,
-          };
-          RecipientIssuance.create(ri).then((issuance) =>
-            res.status(CREATED).json(issuance.toJSON())
+        const requested = Array.isArray(req.body) ? req.body : [req.body];
+        Recipient.findAll({
+          where: { id: { [Op.in]: requested.map((enr) => enr.recipientId) } },
+        }).then((recipients) => {
+          const reqsById = requested.reduce((acc, cur) => {
+            acc[cur.recipientId] = cur;
+            return acc;
+          }, {});
+          return Promise.all(
+            recipients.map((recipient) => {
+              const enrollment = reqsById[recipient.id];
+              const ri = {
+                isApproved: enrollment.isApproved,
+                ...(enrollment.isApproved ? { approvedAt: new Date() } : null),
+              };
+              return recipient.$add("Issuance", issuance, { through: ri });
+            })
+          ).then((results) =>
+            res.status(CREATED).json({ created: results.length })
           );
         });
       })
