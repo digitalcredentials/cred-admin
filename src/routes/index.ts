@@ -5,6 +5,7 @@ import { IssuancesRouter } from "./Issuances";
 import { GroupRouter } from "./Groups";
 import { EnrollRouter } from "./Enroll";
 import { UsersRouter } from "./Users";
+import { ClaimRouter } from "./Claim";
 
 // Init router and path
 const router = Router();
@@ -16,6 +17,7 @@ router.use("/issuances", new IssuancesRouter().getRouter());
 router.use("/groups", new GroupRouter().getRouter());
 router.use("/enroll", new EnrollRouter().getRouter());
 router.use("/users", new UsersRouter().getRouter());
+router.use("/claim", new ClaimRouter().getRouter());
 
 // Export the base-router
 export default router;

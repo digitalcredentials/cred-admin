@@ -12,6 +12,7 @@ import { Op } from "sequelize";
 import { Credential } from "../models/Credential";
 import { Recipient } from "../models/Recipient";
 import { Issuance } from "../models/Issuance";
+import { v4 as uuidv4 } from "uuid";
 
 import type { Group } from "../models/Group";
 
@@ -166,6 +167,7 @@ export class EnrollRouter {
             recipients.map((recipient) => {
               const enrollment = reqsById[recipient.id];
               const ri = {
+                awardId: uuidv4(),
                 isApproved: enrollment.isApproved,
                 ...(enrollment.isApproved ? { approvedAt: new Date() } : null),
               };
