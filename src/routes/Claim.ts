@@ -76,7 +76,7 @@ export class ClaimRouter {
           res.status(NOT_FOUND).send();
           return;
         }
-        const url = `dccrequest:request?request_url=https://${req.hostname}/claim/${award.awardId}`;
+        const url = `dccrequest:request?request_url=${process.env.PUBLIC_URL}/api/claim/${award.awardId}`;
         QRCode.toDataURL(url).then((qr) => {
           const claim = {
             url,
@@ -143,7 +143,7 @@ export class ClaimRouter {
           return;
         }
         const templateVals = {
-          AWARD_URL: `https://${req.hostname}/issuance/${award.issuance.id}`,
+          AWARD_URL: `${process.env.PUBLIC_URL}/api/issuance/${award.issuance.id}`,
           ISSUER_DID: award.issuance.credential.group.didDoc.id,
           ISSUER_NAME: award.issuance.credential.group.name,
           DATE: award.issuance.issueDate,
