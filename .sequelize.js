@@ -1,10 +1,5 @@
 const conf = {
-  username: 'credadmin',
-  password: 'admin_cred_access',
-  database: 'credadmin',
-  host: 'db',
-  port: 5432,
-  dialect: 'postgres',
+  use_env_variable: 'CA_DB_CONNECTION_URL',
   seederStorage: 'sequelize',
 }
 
