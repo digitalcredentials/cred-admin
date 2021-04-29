@@ -130,10 +130,6 @@ export class ClaimRouter {
           res.status(BAD_REQUEST).send();
           return;
         }
-        if (award.recipient.did && req.body.holder !== award.recipient.did) {
-          res.status(UNAUTHORIZED).send();
-          return;
-        }
         if (!award.recipient.did) {
           award.recipient.did = req.body.holder;
           award.recipient.save();
