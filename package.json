@@ -27,7 +27,7 @@
     "@server": "dist/Server"
   },
   "dependencies": {
-    "@digitalcredentials/sign-and-verify-core": "^0.0.8",
+    "@digitalcredentials/sign-and-verify-core": "^0.0.9",
     "@types/bcrypt": "^3.0.0",
     "@types/json-templates": "^3.0.0",
     "@types/qrcode": "^1.4.0",

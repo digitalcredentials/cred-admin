@@ -126,11 +126,11 @@ export class ClaimRouter {
           res.status(NOT_FOUND).send();
           return;
         }
-        if (
-          award.recipient.did &&
-          req.body.holder &&
-          req.body.holder !== award.recipient.did
-        ) {
+        if (!req.body.holder) {
+          res.status(BAD_REQUEST).send();
+          return;
+        }
+        if (award.recipient.did && req.body.holder !== award.recipient.did) {
           res.status(UNAUTHORIZED).send();
           return;
         }
@@ -146,7 +146,7 @@ export class ClaimRouter {
           AWARD_URL: `${process.env.PUBLIC_URL}/api/issuance/${award.issuance.id}`,
           ISSUER_DID: award.issuance.credential.group.didDoc.id,
           ISSUER_NAME: award.issuance.credential.group.name,
-          DATE: award.issuance.issueDate,
+          DATE: award.issuance.issueDate.toISOString(),
           RECIPIENT_DID: req.body.holder,
           RECIPIENT_EMAIL: award.recipient.email,
           RECIPIENT_NAME: award.recipient.name,
@@ -157,11 +157,11 @@ export class ClaimRouter {
         const { sign } = createIssuer(award.issuance.credential.group.didDoc);
         award.issuedAt = new Date();
         award.save();
-        res.status(OK).json(
-          sign(populated, {
-            verificationMethod: award.issuance.credential.group.didKeyId,
-          })
-        );
+        sign(populated, {
+          verificationMethod: award.issuance.credential.group.didKeyId,
+        }).then((signed) => {
+          res.status(OK).json(signed);
+        });
       })
       .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
   }
