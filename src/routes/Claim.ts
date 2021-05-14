@@ -6,11 +6,11 @@ import {
   NOT_FOUND,
   OK,
 } from "http-status-codes";
-import { Group } from "../models/Group";
-import { Issuance } from "../models/Issuance";
-import { Recipient } from "../models/Recipient";
-import { Credential } from "../models/Credential";
-import { RecipientIssuance } from "../models/RecipientIssuance";
+import { Group } from "@models/Group";
+import { Issuance } from "@models/Issuance";
+import { Recipient } from "@models/Recipient";
+import { Credential } from "@models/Credential";
+import { RecipientIssuance } from "@models/RecipientIssuance";
 import {
   ApiPath,
   ApiOperationGet,

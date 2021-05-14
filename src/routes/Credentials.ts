@@ -8,8 +8,8 @@ import {
 } from "http-status-codes";
 import passport from "passport";
 import { Op } from "sequelize";
-import { Group } from "../models/Group";
-import { Credential } from "../models/Credential";
+import { Group } from "@models/Group";
+import { Credential } from "@models/Credential";
 import type { FindOptions } from "sequelize";
 
 import {

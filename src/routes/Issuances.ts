@@ -8,9 +8,9 @@ import {
   OK,
 } from "http-status-codes";
 import passport from "passport";
-import { Group } from "../models/Group";
-import { Issuance } from "../models/Issuance";
-import { Credential } from "../models/Credential";
+import { Group } from "@models/Group";
+import { Issuance } from "@models/Issuance";
+import { Credential } from "@models/Credential";
 
 import {
   ApiPath,

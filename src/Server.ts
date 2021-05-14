@@ -13,8 +13,8 @@ import "express-async-errors";
 
 // initialize sequelize before pulling in any models
 import "./sequelize";
-import { User } from "./models/User";
-import { Group } from "./models/Group";
+import { User } from "@models/User";
+import { Group } from "@models/Group";
 import BaseRouter from "./routes";
 import logger from "@shared/Logger";
 import "./apimodels";

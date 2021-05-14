@@ -13,7 +13,7 @@ import {
   ValidatedRequestSchema,
   createValidator,
 } from "express-joi-validation";
-import { Recipient } from "../models/Recipient";
+import { Recipient } from "@models/Recipient";
 
 import {
   ApiPath,

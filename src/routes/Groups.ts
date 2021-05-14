@@ -7,8 +7,8 @@ import {
   INTERNAL_SERVER_ERROR,
 } from "http-status-codes";
 import passport from "passport";
-import { User } from "../models/User";
-import { Group } from "../models/Group";
+import { User } from "@models/User";
+import { Group } from "@models/Group";
 
 import {
   ApiPath,

@@ -9,12 +9,12 @@ import {
 } from "http-status-codes";
 import passport from "passport";
 import { Op } from "sequelize";
-import { Credential } from "../models/Credential";
-import { Recipient } from "../models/Recipient";
-import { Issuance } from "../models/Issuance";
+import { Credential } from "@models/Credential";
+import { Recipient } from "@models/Recipient";
+import { Issuance } from "@models/Issuance";
 import { v4 as uuidv4 } from "uuid";
 
-import type { Group } from "../models/Group";
+import type { Group } from "@models/Group";
 
 import {
   ApiPath,
