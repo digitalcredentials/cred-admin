@@ -150,7 +150,7 @@ export class ClaimRouter {
         };
         const template = parse(award.issuance.credential.template);
         const populated = template(templateVals);
-        const { sign } = createIssuer(award.issuance.credential.group.didDoc);
+        const { sign } = createIssuer([award.issuance.credential.group.didDoc]);
         award.issuedAt = new Date();
         award.save();
         sign(populated, {

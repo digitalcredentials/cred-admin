@@ -4,6 +4,8 @@ WORKDIR /usr/src/app
 
 RUN apk add libtool autoconf automake alpine-sdk python3
 
+RUN npm install -g npm
+
 COPY package.json .
 COPY package-lock.json .
 

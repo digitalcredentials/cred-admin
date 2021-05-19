@@ -11,7 +11,7 @@ import {
 import { Credential } from "./Credential";
 import { User } from "./User";
 import { UserGroup } from "./UserGroup";
-import { DIDDocument } from "../types";
+import type { DIDDocument } from "@digitalcredentials/sign-and-verify-core";
 
 @Table
 export class Group extends Model implements Group {
