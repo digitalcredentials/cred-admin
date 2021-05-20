@@ -5,6 +5,7 @@ import {
   AllowNull,
   Model,
   BelongsToMany,
+  IsEmail,
 } from "sequelize-typescript";
 import { Issuance } from "./Issuance";
 import { RecipientIssuance } from "./RecipientIssuance";
@@ -17,6 +18,7 @@ export class Recipient extends Model implements Recipient {
 
   @Unique
   @AllowNull(false)
+  @IsEmail
   @Column
   email!: string;
 
