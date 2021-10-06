@@ -15,3 +15,18 @@ export class UserPostModel {
   })
   isAdmin!: boolean;
 }
+@ApiModel({
+  description: "A user",
+  name: "UserGet",
+})
+export class UserGetModel {
+  @ApiModelProperty({
+    required: true,
+  })
+  id!: number;
+
+  @ApiModelProperty({
+    required: true,
+  })
+  token!: string;
+}

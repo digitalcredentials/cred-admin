@@ -138,6 +138,10 @@ export class ClaimRouter {
           res.status(UNAUTHORIZED).send();
           return;
         }
+        if (!award.issuance.credential.group.didDoc) {
+          res.status(INTERNAL_SERVER_ERROR).send();
+          return;
+        }
         const templateVals = {
           AWARD_URL: `${process.env.PUBLIC_URL}/api/issuance/${award.issuance.id}`,
           ISSUER_DID: award.issuance.credential.group.didDoc.id,

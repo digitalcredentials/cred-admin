@@ -11,11 +11,7 @@ import passport from "passport";
 import { createValidator } from "express-joi-validation";
 import { User } from "@models/User";
 
-import {
-  ApiPath,
-  ApiOperationPost,
-  SwaggerDefinitionConstant,
-} from "swagger-express-typescript";
+import { ApiPath, ApiOperationPost } from "swagger-express-typescript";
 
 @ApiPath({
   path: "/api/users/",
@@ -51,7 +47,8 @@ export class UsersRouter {
     responses: {
       201: {
         description: "Created",
-        type: SwaggerDefinitionConstant.Response.Type.STRING,
+        type: "User",
+        model: "UserGet",
       },
     },
     security: {
@@ -69,14 +66,13 @@ export class UsersRouter {
         };
         User.create(toCreate)
           .then((user) =>
-            res
-              .status(CREATED)
-              .json(
-                jwt.sign(
-                  { name: user.name, apiToken: uuid },
-                  process.env.CA_JWT_TOKEN || "secret"
-                )
-              )
+            res.status(CREATED).json({
+              id: user.id,
+              token: jwt.sign(
+                { name: user.name, apiToken: uuid },
+                process.env.CA_JWT_TOKEN || "secret"
+              ),
+            })
           )
           .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
       });

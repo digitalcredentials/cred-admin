@@ -25,4 +25,14 @@ export class GroupPostModel {
     required: true,
   })
   name!: string;
+
+  @ApiModelProperty({
+    required: true,
+  })
+  didDoc!: Record<string, never>;
+
+  @ApiModelProperty({
+    required: true,
+  })
+  didKeyId!: string;
 }

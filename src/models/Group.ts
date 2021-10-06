@@ -22,7 +22,7 @@ export class Group extends Model implements Group {
 
   @AllowNull(false)
   @Column(DataType.JSONB)
-  didDoc!: DIDDocument;
+  didDoc?: DIDDocument;
 
   @AllowNull(false)
   @Column

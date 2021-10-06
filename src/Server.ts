@@ -52,7 +52,7 @@ passport.use(
     }
     return User.findOne({
       where: { name: jwtPayload.name },
-      include: Group,
+      include: [{ model: Group, attributes: ["id", "name"] }],
     })
       .then((user) => {
         if (!user) {
