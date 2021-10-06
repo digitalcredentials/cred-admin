@@ -5,5 +5,5 @@
     sniStrict = true
 
 [[tls.certificates]]
-  certFile = "/data/traefik/127.0.0.1.xip.io.crt"
-  keyFile = "/data/traefik/127.0.0.1.xip.io.key"
+  certFile = "/data/traefik/127.0.0.1.nip.io.crt"
+  keyFile = "/data/traefik/127.0.0.1.nip.io.key"

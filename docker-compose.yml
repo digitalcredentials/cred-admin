@@ -36,11 +36,11 @@ services:
     build: .
     environment:
       CA_DB_CONNECTION_URL: 'postgres://credadmin:admin_cred_access@db:5432/credadmin'
-      PUBLIC_URL: https://credadmin.127.0.0.1.xip.io
+      PUBLIC_URL: https://credadmin.127.0.0.1.nip.io
     expose: 
       - "3000"
     labels:
-      - "traefik.http.routers.whoami.rule=Host(`credadmin.127.0.0.1.xip.io`)"
+      - "traefik.http.routers.whoami.rule=Host(`credadmin.127.0.0.1.nip.io`)"
       - "traefik.http.routers.whoami.tls=true"
     depends_on:
       db:
