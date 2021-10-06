@@ -54,7 +54,7 @@ export class ClaimRouter {
     responses: {
       200: {
         description: "Success",
-        type: SwaggerDefinitionConstant.Response.Type.ARRAY,
+        type: "Claim",
         model: "ClaimGet",
       },
     },
@@ -104,7 +104,7 @@ export class ClaimRouter {
     responses: {
       200: {
         description: "Success",
-        type: SwaggerDefinitionConstant.Response.Type.ARRAY,
+        type: "Claim",
         model: "ClaimPost",
       },
     },

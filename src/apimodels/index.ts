@@ -20,3 +20,6 @@ new UserGetModel();
 new UserPostModel();
 import { EnrollmentModel } from "./enrollment.model";
 new EnrollmentModel();
+import { ClaimGetModel, ClaimPostModel } from "./claim.model";
+new ClaimGetModel();
+new ClaimPostModel();
