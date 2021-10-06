@@ -28,6 +28,7 @@ COPY --from=builder --chown=node:node /usr/src/app/node_modules ./node_modules
 COPY .sequelize.js .
 COPY migrations migrations
 COPY seeders seeders
+COPY templates templates
 COPY --from=builder --chown=node:node /usr/src/app/dist dist
 
 USER node

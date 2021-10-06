@@ -20,6 +20,9 @@ import {
 import { createIssuer } from "@digitalcredentials/sign-and-verify-core";
 import parse from "json-templates";
 import QRCode from "qrcode";
+import files from "../files";
+
+import type { Readable } from "stream";
 
 @ApiPath({
   path: "/api/claim/{awardId}",
@@ -109,40 +112,36 @@ export class ClaimRouter {
       },
     },
   })
-  postClaim(req: Request, res: Response): void {
+  postClaim(req: Request, res: Response): Promise<Response> {
     if (!req.params.awardId) {
-      res.status(BAD_REQUEST).send();
-      return;
+      return new Promise((resolve) => resolve(res.status(BAD_REQUEST).send()));
     }
-    RecipientIssuance.findOne({
+    return RecipientIssuance.findOne({
       where: { awardId: req.params.awardId },
       include: [
         Recipient,
         { model: Issuance, include: [{ model: Credential, include: [Group] }] },
       ],
     })
-      .then((award) => {
+      .then(async (award) => {
         if (!award) {
-          res.status(NOT_FOUND).send();
-          return;
+          return res.status(NOT_FOUND).send();
         }
         if (!req.body.holder) {
-          res.status(BAD_REQUEST).send();
-          return;
+          return res.status(BAD_REQUEST).send();
         }
         if (!award.recipient.did) {
           award.recipient.did = req.body.holder;
           award.recipient.save();
         }
         if (!award.isApproved) {
-          res.status(UNAUTHORIZED).send();
-          return;
+          return res.status(UNAUTHORIZED).send();
         }
         if (!award.issuance.credential.group.didDoc) {
-          res.status(INTERNAL_SERVER_ERROR).send();
-          return;
+          return res.status(INTERNAL_SERVER_ERROR).send();
         }
         const templateVals = {
+          ...award.issuance.credential.templateValues,
           AWARD_URL: `${process.env.PUBLIC_URL}/api/issuance/${award.issuance.id}`,
           ISSUER_DID: award.issuance.credential.group.didDoc.id,
           ISSUER_NAME: award.issuance.credential.group.name,
@@ -152,17 +151,41 @@ export class ClaimRouter {
           RECIPIENT_NAME: award.recipient.name,
           ISSUANCE_URL: req.originalUrl,
         };
-        const template = parse(award.issuance.credential.template);
+        const templateReadable = await files.getFileAsReadable(
+          award.issuance.credential.templatePath
+        );
+        const readableToString = (readable: Readable): Promise<string> => {
+          return new Promise((resolve, reject) => {
+            let data = "";
+            readable.on("data", (chunk: string) => {
+              data += chunk;
+            });
+            readable.on("end", () => {
+              resolve(data);
+            });
+            readable.on("error", (err: Error) => {
+              reject(err);
+            });
+          });
+        };
+        const template = parse(
+          JSON.parse(await readableToString(templateReadable))
+        );
         const populated = template(templateVals);
         const { sign } = createIssuer([award.issuance.credential.group.didDoc]);
         award.isIssued = true;
         award.issuedAt = new Date();
-        award.save();
-        sign(populated, {
-          verificationMethod: award.issuance.credential.group.didKeyId,
-        }).then((signed) => {
-          res.status(OK).json(signed);
-        });
+        return Promise.all([
+          award.save(),
+          sign(populated, {
+            verificationMethod: award.issuance.credential.group.didKeyId,
+          }),
+        ])
+          .then(([, signed]) => res.status(OK).json(signed))
+          .catch((err) => {
+            console.error(err);
+            return res.status(INTERNAL_SERVER_ERROR).send(err);
+          });
       })
       .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
   }
