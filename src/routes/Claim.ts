@@ -18,6 +18,7 @@ import {
   SwaggerDefinitionConstant,
 } from "swagger-express-typescript";
 import { createIssuer } from "@digitalcredentials/sign-and-verify-core";
+import { jwtVerify } from "jose";
 import parse from "json-templates";
 import QRCode from "qrcode";
 import files from "../files";
@@ -112,10 +113,22 @@ export class ClaimRouter {
       },
     },
   })
-  postClaim(req: Request, res: Response): Promise<Response> {
+  async postClaim(req: Request, res: Response): Promise<Response> {
     if (!req.params.awardId) {
       return new Promise((resolve) => resolve(res.status(BAD_REQUEST).send()));
     }
+
+    const authHeader = req.get("Authorization")?.split(" ");
+    if (!authHeader || authHeader[0] !== "Bearer" || !authHeader[1]) {
+      return res.status(UNAUTHORIZED).send();
+    }
+    const authToken = authHeader[1];
+    const { payload, protectedHeader } = await jwtVerify(
+      authToken /*,
+      publicKey,
+      {issuer, audience}*/
+    );
+
     return RecipientIssuance.findOne({
       where: { awardId: req.params.awardId },
       include: [
