@@ -18,12 +18,25 @@ import {
   SwaggerDefinitionConstant,
 } from "swagger-express-typescript";
 import { createIssuer } from "@digitalcredentials/sign-and-verify-core";
-import { jwtVerify } from "jose";
+import * as jose from "jose";
 import parse from "json-templates";
 import QRCode from "qrcode";
 import files from "../files";
 
 import type { Readable } from "stream";
+
+const oidcIssuerUrl = process.env.OIDC_ISSUER_URL
+  ? process.env.OIDC_ISSUER_URL
+  : "";
+
+if (oidcIssuerUrl === "") {
+  console.error("ERROR: OIDC_ISSUER_URL not set!");
+  process.exit(1);
+}
+
+const publicUrl = process.env.PUBLIC_URL
+  ? process.env.PUBLIC_URL
+  : console.error("ERROR: PUBLIC_URL not set!");
 
 @ApiPath({
   path: "/api/claim/{awardId}",
@@ -80,7 +93,7 @@ export class ClaimRouter {
           res.status(NOT_FOUND).send();
           return;
         }
-        const url = `dccrequest:request?request_url=${process.env.PUBLIC_URL}/api/claim/${award.awardId}`;
+        const url = `dccrequest://request?issuer=${oidcIssuerUrl}&vc_request_url=${publicUrl}/api/claim/${award.awardId}`;
         QRCode.toDataURL(url).then((qr) => {
           const claim = {
             url,
@@ -123,11 +136,10 @@ export class ClaimRouter {
       return res.status(UNAUTHORIZED).send();
     }
     const authToken = authHeader[1];
-    const { payload, protectedHeader } = await jwtVerify(
-      authToken /*,
-      publicKey,
-      {issuer, audience}*/
-    );
+    const jwks = jose.createRemoteJWKSet(new URL(`${oidcIssuerUrl}/jwks`));
+    const { payload, protectedHeader } = await jose.jwtVerify(authToken, jwks);
+
+    console.log(payload);
 
     return RecipientIssuance.findOne({
       where: { awardId: req.params.awardId },
