@@ -14,28 +14,13 @@
     "target": "es6",
     "moduleResolution": "node",
     "paths": {
-      "@models/*": [
-        "src/models/*"
-      ],
-      "@entities/*": [
-        "src/entities/*"
-      ],
-      "@shared/*": [
-        "src/shared/*"
-      ],
-      "@server": [
-        "src/Server"
-      ]
+      "@models/*": ["src/models/*"],
+      "@entities/*": ["src/entities/*"],
+      "@shared/*": ["src/shared/*"],
+      "@server": ["src/Server"]
     },
-    "types": [
-      "node"
-    ],
-    "typeRoots": [
-      "src/@types",
-      "node_modules/@types"
-    ]
+    "types": ["node"],
+    "typeRoots": ["src/@types", "node_modules/@types"]
   },
-  "include": [
-    "src/**/*.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }

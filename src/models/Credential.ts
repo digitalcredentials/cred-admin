@@ -17,8 +17,11 @@ export class Credential extends Model implements Credential {
   @Column
   title!: string;
 
+  @Column
+  templatePath!: string;
+
   @Column(DataType.JSONB)
-  template!: Record<string, unknown>;
+  templateValues!: Record<string, string>;
 
   @ForeignKey(() => Group)
   @Column
