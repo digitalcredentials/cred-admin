@@ -75,6 +75,12 @@ export class RecipientsRouter {
           type: "string",
           allowEmptyValue: false,
         },
+        externalId: {
+          name: "externalId",
+          description: "External Identifier",
+          type: "string",
+          allowEmptyValue: false,
+        },
       },
     },
     responses: {
@@ -97,6 +103,7 @@ export class RecipientsRouter {
         ...(req.query.id ? { id: req.query.id } : null),
         ...(req.query.did ? { did: req.query.did } : null),
         ...(req.query.email ? { email: req.query.email } : null),
+        ...(req.query.externalId ? { externalId: req.query.externalId } : null),
       },
     };
     if (Object.keys(where.where).length === 0) {
