@@ -48,7 +48,7 @@ export class ClaimRouter {
   constructor() {
     this.router = Router();
     this.router.get("/:recipientId/:issuanceId", this.getClaim);
-    this.router.post("/:awardId", this.postClaim);
+    this.router.post("/", this.postClaim);
   }
 
   @ApiOperationGet({
@@ -93,7 +93,7 @@ export class ClaimRouter {
           res.status(NOT_FOUND).send();
           return;
         }
-        const url = `dccrequest://request?issuer=${oidcIssuerUrl}&vc_request_url=${publicUrl}/api/claim/${award.awardId}`;
+        const url = `dccrequest://request?issuer=${oidcIssuerUrl}&vc_request_url=${publicUrl}/api/claim/&challenge=${award.awardId}`;
         QRCode.toDataURL(url).then((qr) => {
           const claim = {
             url,
@@ -110,8 +110,8 @@ export class ClaimRouter {
     description: "Claim an issued credential",
     summary: "Claim an issued credential",
     parameters: {
-      path: {
-        awardId: {
+      query: {
+        challenge: {
           type: SwaggerDefinitionConstant.Parameter.Type.STRING,
           required: true,
           allowEmptyValue: false,
@@ -127,7 +127,8 @@ export class ClaimRouter {
     },
   })
   async postClaim(req: Request, res: Response): Promise<Response> {
-    if (!req.params.awardId) {
+    const awardId = req.query.challenge;
+    if (!awardId) {
       return new Promise((resolve) => resolve(res.status(BAD_REQUEST).send()));
     }
 
@@ -142,7 +143,7 @@ export class ClaimRouter {
     console.log(payload);
 
     return RecipientIssuance.findOne({
-      where: { awardId: req.params.awardId },
+      where: { awardId },
       include: [
         Recipient,
         { model: Issuance, include: [{ model: Credential, include: [Group] }] },
