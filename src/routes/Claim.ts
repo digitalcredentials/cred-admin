@@ -93,7 +93,10 @@ export class ClaimRouter {
           res.status(NOT_FOUND).send();
           return;
         }
-        const url = `dccrequest://request?issuer=${oidcIssuerUrl}&vc_request_url=${publicUrl}/api/claim/&challenge=${award.awardId}`;
+        const reqUrl = encodeURIComponent(`${publicUrl}/api/claim/`);
+        const url = `dccrequest://request?issuer=${encodeURIComponent(
+          oidcIssuerUrl
+        )}&vc_request_url=${reqUrl}&challenge=${award.awardId}`;
         QRCode.toDataURL(url).then((qr) => {
           const claim = {
             url,
