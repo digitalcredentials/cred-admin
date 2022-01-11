@@ -96,7 +96,7 @@ export class ClaimRouter {
         const reqUrl = encodeURIComponent(`${publicUrl}/api/claim/`);
         const url = `dccrequest://request?issuer=${encodeURIComponent(
           oidcIssuerUrl
-        )}&vc_request_url=${reqUrl}&challenge=${award.awardId}`;
+        )}&vc_request_url=${reqUrl}&challenge=${award.awardId}&auth_type=code`;
         QRCode.toDataURL(url).then((qr) => {
           const claim = {
             url,
