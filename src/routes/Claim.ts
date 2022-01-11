@@ -130,10 +130,10 @@ export class ClaimRouter {
     },
   })
   async postClaim(req: Request, res: Response): Promise<Response> {
-    const awardId = req.query.challenge;
-    if (!awardId) {
+    if (!req.body.proof && !req.body.proof.challenge) {
       return new Promise((resolve) => resolve(res.status(BAD_REQUEST).send()));
     }
+    const awardId = req.body.proof.challenge;
 
     const authHeader = req.get("Authorization")?.split(" ");
     if (!authHeader || authHeader[0] !== "Bearer" || !authHeader[1]) {
