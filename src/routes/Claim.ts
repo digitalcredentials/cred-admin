@@ -141,9 +141,9 @@ export class ClaimRouter {
     }
     const authToken = authHeader[1];
     const jwks = jose.createRemoteJWKSet(new URL(`${oidcIssuerUrl}/jwks`));
-    const { payload, protectedHeader } = await jose.jwtVerify(authToken, jwks);
+    //const { payload, protectedHeader } = await jose.jwtVerify(authToken, jwks);
 
-    console.log(payload);
+    //console.log(payload);
 
     return RecipientIssuance.findOne({
       where: { awardId },
