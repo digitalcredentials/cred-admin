@@ -17,7 +17,10 @@ import {
   ApiOperationPost,
   SwaggerDefinitionConstant,
 } from "swagger-express-typescript";
-import { createIssuer } from "@digitalcredentials/sign-and-verify-core";
+import {
+  createIssuer,
+  createVerifier,
+} from "@digitalcredentials/sign-and-verify-core";
 import * as jose from "jose";
 import parse from "json-templates";
 import QRCode from "qrcode";
@@ -113,15 +116,7 @@ export class ClaimRouter {
   @ApiOperationPost({
     description: "Claim an issued credential",
     summary: "Claim an issued credential",
-    parameters: {
-      query: {
-        challenge: {
-          type: SwaggerDefinitionConstant.Parameter.Type.STRING,
-          required: true,
-          allowEmptyValue: false,
-        },
-      },
-    },
+    parameters: {},
     responses: {
       200: {
         description: "Success",
@@ -131,14 +126,18 @@ export class ClaimRouter {
     },
   })
   async postClaim(req: Request, res: Response): Promise<Response> {
-    if (!req.body.proof && !req.body.proof.challenge) {
-      return new Promise((resolve) => resolve(res.status(BAD_REQUEST).send()));
+    if (!req.body.proof?.challenge || !req.body.holder) {
+      return new Promise((resolve) =>
+        resolve(
+          res.status(BAD_REQUEST).send("Missing challenge or recipient DID")
+        )
+      );
     }
     const awardId = req.body.proof.challenge;
 
     const authHeader = req.get("Authorization")?.split(" ");
     if (!authHeader || authHeader[0] !== "Bearer" || !authHeader[1]) {
-      return res.status(UNAUTHORIZED).send();
+      return res.status(UNAUTHORIZED).send("Missing OIDC token");
     }
     const authToken = authHeader[1];
     try {
@@ -146,6 +145,17 @@ export class ClaimRouter {
       const { payload } = await jose.jwtVerify(authToken, jwks);
       const OidcCompare = process.env.OIDC_COMPARE || "sub";
       const OidcId = payload[OidcCompare];
+
+      const { verifyPresentation } = createVerifier(req.body.holder);
+      const didVerificationResult = await verifyPresentation({
+        verifiablePresentation: req.body,
+        issuerMembershipRegistry: {},
+        options: { challenge: awardId },
+      });
+
+      if (!didVerificationResult.verified) {
+        return res.status(UNAUTHORIZED).send(didVerificationResult);
+      }
 
       return RecipientIssuance.findOne({
         where: { awardId },
@@ -161,9 +171,6 @@ export class ClaimRouter {
           if (!award) {
             return res.status(NOT_FOUND).send();
           }
-          if (!req.body.holder) {
-            return res.status(BAD_REQUEST).send();
-          }
           if (
             OidcId !== award.recipient.externalId &&
             OidcId !== award.recipient.email
@@ -175,15 +182,19 @@ export class ClaimRouter {
               .status(UNAUTHORIZED)
               .send("Logged in user doesn't match credential recipient.");
           }
-          if (!award.recipient.did) {
-            award.recipient.did = req.body.holder;
-            award.recipient.save();
-          }
+          award.recipient.did = req.body.holder;
+          award.recipient.save();
           if (!award.isApproved) {
-            return res.status(UNAUTHORIZED).send();
+            return res
+              .status(UNAUTHORIZED)
+              .send(
+                "Recipient has not completed requirements to receive this credential"
+              );
           }
           if (!award.issuance.credential.group.didDoc) {
-            return res.status(INTERNAL_SERVER_ERROR).send();
+            return res
+              .status(INTERNAL_SERVER_ERROR)
+              .send("Issuing Group has not been configured with a key");
           }
           const templateVals = {
             ...award.issuance.credential.templateValues,
