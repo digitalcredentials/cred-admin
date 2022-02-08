@@ -146,7 +146,7 @@ export class ClaimRouter {
       const OidcCompare = process.env.OIDC_COMPARE || "sub";
       const OidcId = payload[OidcCompare];
 
-      const { verifyPresentation } = createVerifier(req.body.holder);
+      const { verifyPresentation } = createVerifier([]);
       const didVerificationResult = await verifyPresentation({
         verifiablePresentation: req.body,
         issuerMembershipRegistry: {},

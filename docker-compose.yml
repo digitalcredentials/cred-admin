@@ -38,7 +38,7 @@ services:
       CA_DB_CONNECTION_URL: 'postgres://credadmin:admin_cred_access@db:5432/credadmin'
       OIDC_ISSUER_URL: $OIDC_ISSUER_URL
       PUBLIC_URL: https://credadmin.127.0.0.1.nip.io
-    expose: 
+    expose:
       - "3000"
     labels:
       - "traefik.http.routers.whoami.rule=Host(`credadmin.127.0.0.1.nip.io`)"
