@@ -25,7 +25,7 @@ import * as jose from "jose";
 import parse from "json-templates";
 import QRCode from "qrcode";
 import files from "../files";
-import logger from "../shared/Logger";
+import logger from "@shared/Logger";
 
 import type { Readable } from "stream";
 
@@ -34,13 +34,13 @@ const oidcIssuerUrl = process.env.OIDC_ISSUER_URL
   : "";
 
 if (oidcIssuerUrl === "") {
-  console.error("ERROR: OIDC_ISSUER_URL not set!");
+  logger.error("ERROR: OIDC_ISSUER_URL not set!");
   process.exit(1);
 }
 
 const publicUrl = process.env.PUBLIC_URL
   ? process.env.PUBLIC_URL
-  : console.error("ERROR: PUBLIC_URL not set!");
+  : logger.error("ERROR: PUBLIC_URL not set!");
 
 @ApiPath({
   path: "/api/claim/{awardId}",
@@ -241,11 +241,14 @@ export class ClaimRouter {
           ])
             .then(([, signed]) => res.status(OK).json(signed))
             .catch((err) => {
-              console.error(err);
+              logger.error(err);
               return res.status(INTERNAL_SERVER_ERROR).send(err);
             });
         })
-        .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+        .catch((err) => {
+          logger.error(err);
+          return res.status(INTERNAL_SERVER_ERROR).send(err);
+        });
     } catch (err) {
       logger.error(err);
       return res.status(INTERNAL_SERVER_ERROR).send(err);
