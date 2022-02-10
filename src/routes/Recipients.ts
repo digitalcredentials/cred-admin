@@ -25,6 +25,7 @@ const querySchema = Joi.object({
   id: Joi.number().integer().positive(),
   did: Joi.string(),
   email: Joi.string().email(),
+  externalId: Joi.string(),
 });
 
 @ApiPath({
