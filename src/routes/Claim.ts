@@ -21,7 +21,7 @@ import {
   createIssuer,
   createVerifier,
 } from "@digitalcredentials/sign-and-verify-core";
-import * as jose from "jose";
+import axios from "axios";
 import parse from "json-templates";
 import QRCode from "qrcode";
 import files from "../files";
@@ -135,16 +135,20 @@ export class ClaimRouter {
     }
     const awardId = req.body.proof.challenge;
 
-    const authHeader = req.get("Authorization")?.split(" ");
-    if (!authHeader || authHeader[0] !== "Bearer" || !authHeader[1]) {
+    const authHeader = req.get("Authorization");
+    if (!authHeader) {
       return res.status(UNAUTHORIZED).send("Missing OIDC token");
     }
-    const authToken = authHeader[1];
     try {
-      const jwks = jose.createRemoteJWKSet(new URL(`${oidcIssuerUrl}/jwks`));
-      const { payload } = await jose.jwtVerify(authToken, jwks);
+      const OidcInfo = await axios.get(`${oidcIssuerUrl}/userinfo`, {
+        headers: {
+          Authorization: authHeader,
+        },
+        validateStatus: (status) => status === 200,
+      });
+
       const OidcCompare = process.env.OIDC_COMPARE || "sub";
-      const OidcId = payload[OidcCompare];
+      const OidcId = OidcInfo.data[OidcCompare];
 
       const { verifyPresentation } = createVerifier([]);
       const didVerificationResult = await verifyPresentation({
