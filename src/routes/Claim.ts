@@ -140,7 +140,8 @@ export class ClaimRouter {
       return res.status(UNAUTHORIZED).send("Missing OIDC token");
     }
     try {
-      const OidcInfo = await axios.get(`${oidcIssuerUrl}/userinfo`, {
+      const oidcUserinfoPath = process.env.OIDC_USERINFO_PATH || "/userinfo";
+      const OidcInfo = await axios.get(`${oidcIssuerUrl}${oidcUserinfoPath}`, {
         headers: {
           Authorization: authHeader,
         },
