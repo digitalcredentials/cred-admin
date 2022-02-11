@@ -16,7 +16,7 @@
     "id": "{{RECIPIENT_DID}}",
     "name": "{{RECIPIENT_NAME}}",
     "hasCredential": {
-      "id": "{{ISSUANCE_URL}}",
+      "id": "{{ISSUANCE_ID}}",
       "type": ["EducationalOccupationalCredential"],
       "name": "{{CREDENTIAL_NAME}}",
       "description": "{{CREDENTIAL_DESCRIPTION}}",

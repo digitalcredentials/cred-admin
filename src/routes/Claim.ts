@@ -209,7 +209,7 @@ export class ClaimRouter {
             RECIPIENT_DID: req.body.holder,
             RECIPIENT_EMAIL: award.recipient.email,
             RECIPIENT_NAME: award.recipient.name,
-            ISSUANCE_URL: award.awardId,
+            ISSUANCE_ID: award.issuance.id,
           };
           const templateReadable = await files.getFileAsReadable(
             award.issuance.credential.templatePath
