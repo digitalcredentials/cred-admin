@@ -1,7 +1,7 @@
 {
   "name": "cred-admin",
   "description": "Server for managing issuances of academic verifiable credentials",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "license": "MIT",
   "scripts": {
     "build": "node build.js && tsc --build tsconfig.prod.json",
