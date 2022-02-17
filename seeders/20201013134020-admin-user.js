@@ -24,7 +24,7 @@ module.exports = {
     return console.log(
       `Created Admin user with token: ${jwt.sign(
         { name, apiToken: uuid },
-        process.env.CA_JWT_TOKEN || "secret"
+        process.env.CA_JWT_SECRET || "secret"
       )}`
     );
   },

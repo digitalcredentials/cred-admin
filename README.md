@@ -14,3 +14,19 @@ Now you can build and start the server by:
 2. As the server starts for the first time it will generate an admin token for you, note it down as it's not possible to retrieve it after this point
 3. Once the server is up and running you can get to it's interactive documentation at https://credadmin.127.0.0.1.nip.io/api-docs/swagger
 4. Click the `Authorize` button near the top of the page and enter `Bearer xyz` where `xyz` is the admin token you noted earlier
+
+Configuration
+=============
+
+All configuration is done through environment variables.
+
+|Variable            |Default   |Description                                  |
+|--------------------|----------|---------------------------------------------|
+|CA_DB_CONNECTION_URL|          |Database connection URL                      |
+|CA_JWT_SECRET       |secret    |Secret used when signing JWTs for user auth  |
+|OIDC_COMPARE        |sub       |OIDC userInfo field to compare to externalIds|
+|OIDC_ISSUER_URL     |          |URL of OIDC server                           |
+|OIDC_USERINFO_PATH  |/userinfo |Path to the userinfo endpoint of OIDC server |
+|PORT                |3000      |Port to listen for http requests on          |
+|PUBLIC_URL          |          |Publicly reachable URL for this server       |
+|TEMPLATE_URL        |local://templates|URL to retrieve templates from using @tweedegolf/storage-abstraction"|

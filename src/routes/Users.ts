@@ -70,7 +70,7 @@ export class UsersRouter {
               id: user.id,
               token: jwt.sign(
                 { name: user.name, apiToken: uuid },
-                process.env.CA_JWT_TOKEN || "secret"
+                process.env.CA_JWT_SECRET || "secret"
               ),
             })
           )
