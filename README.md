@@ -10,7 +10,7 @@ Configure SSL certs for the local docker instances, you should only have to do t
 
 Now you can build and start the server by:
 
-1. Build and start the SDK with your tool using `docker-compose up --build`, if you get an error that a port is in use you're probably already running a web server or db on your machine, you'll have to either stop it or adjust the ports used by this project in `docker-compose.override.yml`
+1. Build and start the server using `docker-compose up --build`, if you get an error that a port is in use you're probably already running a web server or db on your machine, you'll have to either stop it or adjust the ports used by this project in `docker-compose.override.yml`
 2. As the server starts for the first time it will generate an admin token for you, note it down as it's not possible to retrieve it after this point
 3. Once the server is up and running you can get to it's interactive documentation at https://credadmin.127.0.0.1.nip.io/api-docs/swagger
 4. Click the `Authorize` button near the top of the page and enter `Bearer xyz` where `xyz` is the admin token you noted earlier
