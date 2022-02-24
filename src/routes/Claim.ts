@@ -26,21 +26,9 @@ import parse from "json-templates";
 import QRCode from "qrcode";
 import files from "../files";
 import logger from "@shared/Logger";
+import config from "../config";
 
 import type { Readable } from "stream";
-
-const oidcIssuerUrl = process.env.OIDC_ISSUER_URL
-  ? process.env.OIDC_ISSUER_URL
-  : "";
-
-if (oidcIssuerUrl === "") {
-  logger.error("ERROR: OIDC_ISSUER_URL not set!");
-  process.exit(1);
-}
-
-const publicUrl = process.env.PUBLIC_URL
-  ? process.env.PUBLIC_URL
-  : logger.error("ERROR: PUBLIC_URL not set!");
 
 @ApiPath({
   path: "/api/claim/{awardId}",
@@ -97,9 +85,9 @@ export class ClaimRouter {
           res.status(NOT_FOUND).send();
           return;
         }
-        const reqUrl = encodeURIComponent(`${publicUrl}/api/claim/`);
+        const reqUrl = encodeURIComponent(`${config.publicUrl}/api/claim/`);
         const url = `dccrequest://request?issuer=${encodeURIComponent(
-          oidcIssuerUrl
+          config.oidc.issuerUrl
         )}&vc_request_url=${reqUrl}&challenge=${award.awardId}&auth_type=code`;
         QRCode.toDataURL(url).then((qr) => {
           const claim = {
@@ -140,16 +128,17 @@ export class ClaimRouter {
       return res.status(UNAUTHORIZED).send("Missing OIDC token");
     }
     try {
-      const oidcUserinfoPath = process.env.OIDC_USERINFO_PATH || "/userinfo";
-      const OidcInfo = await axios.get(`${oidcIssuerUrl}${oidcUserinfoPath}`, {
-        headers: {
-          Authorization: authHeader,
-        },
-        validateStatus: (status) => status === 200,
-      });
+      const OidcInfo = await axios.get(
+        `${config.oidc.issuerUrl}${config.oidc.userinfoPath}`,
+        {
+          headers: {
+            Authorization: authHeader,
+          },
+          validateStatus: (status) => status === 200,
+        }
+      );
 
-      const OidcCompare = process.env.OIDC_COMPARE || "sub";
-      const OidcId = OidcInfo.data[OidcCompare];
+      const OidcId = OidcInfo.data[config.oidc.compare];
 
       const { verifyPresentation } = createVerifier([]);
       const didVerificationResult = await verifyPresentation({
@@ -181,7 +170,7 @@ export class ClaimRouter {
             OidcId !== award.recipient.email
           ) {
             logger.warn(
-              `Recipient mismatch: OIDC param "${OidcCompare}" was "${OidcId}", but recipient id is "${award.recipient.externalId} and email is "${award.recipient.email}"`
+              `Recipient mismatch: OIDC param "${config.oidc.compare}" was "${OidcId}", but recipient id is "${award.recipient.externalId} and email is "${award.recipient.email}"`
             );
             return res
               .status(UNAUTHORIZED)
@@ -203,7 +192,7 @@ export class ClaimRouter {
           }
           const templateVals = {
             ...award.issuance.credential.templateValues,
-            AWARD_URL: `${process.env.PUBLIC_URL}/api/issuance/${award.issuance.id}`,
+            AWARD_URL: `${config.publicUrl}/api/issuance/${award.issuance.id}`,
             ISSUER_DID: award.issuance.credential.group.didDoc.id,
             ISSUER_NAME: award.issuance.credential.group.name,
             DATE: award.issuance.issueDate.toISOString(),

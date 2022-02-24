@@ -1,11 +1,8 @@
 import { Sequelize } from "sequelize-typescript";
 import logger from "@shared/Logger";
+import config from "./config";
 
-if (!process.env.CA_DB_CONNECTION_URL) {
-  throw new Error("CA_DB_CONNECTION_URL is not defined in evironment!");
-}
-
-const sequelize = new Sequelize(process.env.CA_DB_CONNECTION_URL || "", {
+const sequelize = new Sequelize(config.dbConnectionUrl, {
   logging: (sql) => logger.debug(sql),
 });
 

@@ -5,13 +5,14 @@
  */
 
 import { createLogger, format, transports } from "winston";
+import config from "../config";
 
 // Import Functions
 const { Console } = transports;
 
 // Init Logger
 const logger = createLogger({
-  level: "info",
+  level: config.logLevel,
 });
 
 /**

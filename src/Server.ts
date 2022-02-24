@@ -10,6 +10,8 @@ import { BAD_REQUEST } from "http-status-codes";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import "express-async-errors";
 
+import config from "./config";
+
 // initialize sequelize before pulling in any models
 import "./sequelize";
 import { User } from "@models/User";
@@ -43,7 +45,7 @@ app.use("/api", BaseRouter);
 // Auth
 const jwtOpts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.CA_JWT_SECRET || "secret",
+  secretOrKey: config.jwtSecret,
 };
 passport.use(
   new JwtStrategy(jwtOpts, (jwtPayload, done) => {

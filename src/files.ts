@@ -1,9 +1,6 @@
-import path from "path";
 import { Storage } from "@tweedegolf/storage-abstraction";
+import config from "./config";
 
-const templatePath =
-  process.env.TEMPLATE_URL ||
-  `local://${path.join(__dirname, "..", "templates")}`;
-const storage = new Storage(templatePath);
+const storage = new Storage(config.templateUrl);
 
 export default storage;

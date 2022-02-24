@@ -10,8 +10,8 @@ import { v4 as uuidv4 } from "uuid";
 import passport from "passport";
 import { createValidator } from "express-joi-validation";
 import { User } from "@models/User";
-
 import { ApiPath, ApiOperationPost } from "swagger-express-typescript";
+import config from "../config";
 
 @ApiPath({
   path: "/api/users/",
@@ -70,7 +70,7 @@ export class UsersRouter {
               id: user.id,
               token: jwt.sign(
                 { name: user.name, apiToken: uuid },
-                process.env.CA_JWT_SECRET || "secret"
+                config.jwtSecret
               ),
             })
           )
