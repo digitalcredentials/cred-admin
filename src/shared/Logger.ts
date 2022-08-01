@@ -5,14 +5,21 @@
  */
 
 import { createLogger, format, transports } from "winston";
-import config from "../config";
+
+const logLevel = process.env["LOG_LEVEL"]
+  ? process.env["LOG_LEVEL"]
+  : process.env.NODE_ENV === "development"
+  ? "debug"
+  : process.env.NODE_ENV === "test"
+  ? "error"
+  : "info";
 
 // Import Functions
 const { Console } = transports;
 
 // Init Logger
 const logger = createLogger({
-  level: config.logLevel,
+  level: logLevel,
 });
 
 /**

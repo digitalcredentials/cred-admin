@@ -34,7 +34,6 @@ const config = {
   /* Set default values assuming NODE_ENV === production */
   port: getEnvVarOrDefault("PORT", "3000"),
   jwtSecret: getEnvVarOrDefault("CA_JWT_SECRET", "secret"),
-  logLevel: getEnvVarOrDefault("LOG_LEVEL", "info"),
   trustProxy: getEnvVarOrDefault("TRUST_PROXY", "loopback"),
   dbConnectionUrl: getEnvVarOrExitError("CA_DB_CONNECTION_URL"),
   oidc: {
@@ -48,13 +47,5 @@ const config = {
     `local://${path.join(__dirname, "..", "templates")}`
   ),
 };
-
-if (process.env.NODE_ENV === "development") {
-  config.logLevel = "debug";
-}
-
-if (process.env.NODE_ENV === "test") {
-  config.logLevel = "error";
-}
 
 export default config;
