@@ -6,7 +6,7 @@ import helmet from "helmet";
 import * as swagger from "swagger-express-typescript";
 import { SwaggerDefinitionConstant } from "swagger-express-typescript";
 import express, { Request, Response } from "express";
-import { BAD_REQUEST } from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import "express-async-errors";
 
@@ -19,6 +19,8 @@ import { Group } from "@models/Group";
 import BaseRouter from "./routes";
 import logger from "@shared/Logger";
 import "./apimodels";
+
+import type { NextFunction } from "express";
 
 const app = express();
 
@@ -99,11 +101,12 @@ app.use(
 );
 
 // Print API errors
-app.use((err: Error, req: Request, res: Response) => {
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   logger.error(err.message, err);
-  return res.status(BAD_REQUEST).json({
+  res.status(StatusCodes.BAD_REQUEST).json({
     error: err.message,
   });
+  next(err);
 });
 
 // Export express instance

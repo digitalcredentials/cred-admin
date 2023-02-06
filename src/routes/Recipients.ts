@@ -1,13 +1,7 @@
 import { Request, Response, Router } from "express";
-import {
-  BAD_REQUEST,
-  CREATED,
-  INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
-  OK,
-} from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import passport from "passport";
-import * as Joi from "joi";
+import Joi from "joi";
 import {
   ValidatedRequest,
   ValidatedRequestSchema,
@@ -108,16 +102,18 @@ export class RecipientsRouter {
       },
     };
     if (Object.keys(where.where).length === 0) {
-      res.status(BAD_REQUEST).send("Need an identifier to find user");
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .send("Need an identifier to find user");
       return;
     }
     Recipient.findOne(where)
       .then((recipient) =>
         recipient
-          ? res.status(OK).json(recipient.toJSON())
-          : res.status(NOT_FOUND).send()
+          ? res.status(StatusCodes.OK).json(recipient.toJSON())
+          : res.status(StatusCodes.NOT_FOUND).send()
       )
-      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+      .catch((err) => res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err));
   }
 
   @ApiOperationPost({
@@ -145,8 +141,10 @@ export class RecipientsRouter {
   })
   createRecipient(req: Request, res: Response): void {
     Recipient.create(req.body)
-      .then((recipient) => res.status(CREATED).json(recipient.toJSON()))
-      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+      .then((recipient) =>
+        res.status(StatusCodes.CREATED).json(recipient.toJSON())
+      )
+      .catch((err) => res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err));
   }
 
   getRouter(): Router {

@@ -1,12 +1,5 @@
 import { Request, Response, Router } from "express";
-import {
-  BAD_REQUEST,
-  CREATED,
-  UNAUTHORIZED,
-  INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
-  OK,
-} from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import passport from "passport";
 import { Group } from "@models/Group";
 import { Issuance } from "@models/Issuance";
@@ -66,11 +59,11 @@ export class IssuancesRouter {
   })
   getIssuances(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(UNAUTHORIZED).send();
+      res.status(StatusCodes.UNAUTHORIZED).send();
       return;
     }
     if (!req.params.credentialId) {
-      res.status(BAD_REQUEST).send();
+      res.status(StatusCodes.BAD_REQUEST).send();
       return;
     }
     Issuance.findAll({
@@ -79,7 +72,7 @@ export class IssuancesRouter {
     })
       .then((issuances) => {
         if (!issuances || issuances.length === 0) {
-          res.status(NOT_FOUND).send();
+          res.status(StatusCodes.NOT_FOUND).send();
           return;
         }
         if (!req.user.isAdmin) {
@@ -90,13 +83,15 @@ export class IssuancesRouter {
               .map((group: Group) => group.id)
               .includes(issuances[0].credential.groupid)
           ) {
-            res.status(UNAUTHORIZED).send();
+            res.status(StatusCodes.UNAUTHORIZED).send();
             return;
           }
         }
-        res.status(OK).json(issuances.map((issuance) => issuance.toJSON()));
+        res
+          .status(StatusCodes.OK)
+          .json(issuances.map((issuance) => issuance.toJSON()));
       })
-      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+      .catch((err) => res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err));
   }
 
   @ApiOperationPost({
@@ -131,7 +126,7 @@ export class IssuancesRouter {
   })
   createIssuance(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(UNAUTHORIZED).send();
+      res.status(StatusCodes.UNAUTHORIZED).send();
       return;
     }
     Credential.findOne({
@@ -139,7 +134,7 @@ export class IssuancesRouter {
     })
       .then((cred) => {
         if (!cred) {
-          res.status(NOT_FOUND).send();
+          res.status(StatusCodes.NOT_FOUND).send();
           return;
         }
 
@@ -151,16 +146,18 @@ export class IssuancesRouter {
             !groups.map((group: Group) => group.id).includes(cred.groupid))
         ) {
           // Non-admins can only create an issuance on a cred that belongs to their group
-          res.status(UNAUTHORIZED).send();
+          res.status(StatusCodes.UNAUTHORIZED).send();
           return;
         } else {
           req.body.issueDate = new Date(req.body.issueDate);
           cred
             .$create("issuance", req.body)
-            .then((issuance) => res.status(CREATED).json(issuance.toJSON()));
+            .then((issuance) =>
+              res.status(StatusCodes.CREATED).json(issuance.toJSON())
+            );
         }
       })
-      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+      .catch((err) => res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err));
   }
 
   getRouter(): Router {

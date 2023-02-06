@@ -1,11 +1,5 @@
 import { Request, Response, Router } from "express";
-import {
-  CREATED,
-  OK,
-  NOT_FOUND,
-  UNAUTHORIZED,
-  INTERNAL_SERVER_ERROR,
-} from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import passport from "passport";
 import { User } from "@models/User";
 import { Group } from "@models/Group";
@@ -60,7 +54,7 @@ export class GroupRouter {
   })
   getGroups(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(UNAUTHORIZED).send();
+      res.status(StatusCodes.UNAUTHORIZED).send();
       return;
     }
     res.send(req.user.groups);
@@ -92,10 +86,12 @@ export class GroupRouter {
   createGroup(req: Request, res: Response): void {
     if (req.user && req.user.isAdmin) {
       Group.create(req.body)
-        .then((group) => res.status(CREATED).json(group.toJSON()))
-        .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+        .then((group) => res.status(StatusCodes.CREATED).json(group.toJSON()))
+        .catch((err) =>
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err)
+        );
     } else {
-      res.status(UNAUTHORIZED).send();
+      res.status(StatusCodes.UNAUTHORIZED).send();
     }
   }
 
@@ -134,13 +130,17 @@ export class GroupRouter {
             where: { id: req.params.uid },
           }).then((user) =>
             group && user
-              ? group.$add("User", user).then(() => res.status(OK).send())
-              : res.status(NOT_FOUND).send()
+              ? group
+                  .$add("User", user)
+                  .then(() => res.status(StatusCodes.OK).send())
+              : res.status(StatusCodes.NOT_FOUND).send()
           )
         )
-        .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+        .catch((err) =>
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err)
+        );
     } else {
-      res.status(UNAUTHORIZED).send();
+      res.status(StatusCodes.UNAUTHORIZED).send();
     }
   }
 

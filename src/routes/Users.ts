@@ -1,9 +1,5 @@
 import { Request, Response, Router } from "express";
-import {
-  CREATED,
-  INTERNAL_SERVER_ERROR,
-  UNAUTHORIZED,
-} from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
@@ -66,7 +62,7 @@ export class UsersRouter {
         };
         User.create(toCreate)
           .then((user) =>
-            res.status(CREATED).json({
+            res.status(StatusCodes.CREATED).json({
               id: user.id,
               token: jwt.sign(
                 { name: user.name, apiToken: uuid },
@@ -74,10 +70,12 @@ export class UsersRouter {
               ),
             })
           )
-          .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+          .catch((err) =>
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err)
+          );
       });
     } else {
-      res.status(UNAUTHORIZED).send();
+      res.status(StatusCodes.UNAUTHORIZED).send();
     }
   }
 

@@ -1,10 +1,10 @@
 {
   "@context": [
     "https://www.w3.org/2018/credentials/v1",
-    "https://w3id.org/security/suites/ed25519-2020/v1",
-    "https://w3c-ccg.github.io/vc-ed/plugfest-1-2022/jff-vc-edu-plugfest-1-context.json"
+    "https://purl.imsglobal.org/spec/ob/v3p0/context.json"
   ],
   "id": "{{AWARD_URL}}",
+  "name": "{{CREDENTIAL_NAME}}",
   "type": ["VerifiableCredential", "OpenBadgeCredential"],
   "issuer": {
     "type": "Profile",
@@ -17,6 +17,9 @@
     "type": "AchievementSubject",
     "id": "{{RECIPIENT_DID}}",
     "name": "{{RECIPIENT_NAME}}",
+    "achievement": {
+      "type": "Achievement",
+      "id": "{{AWARD_URL}}/{{ISSUANCE_ID}}",
       "name": "{{CREDENTIAL_NAME}}",
       "description": "{{CREDENTIAL_DESCRIPTION}}",
       "criteria": {

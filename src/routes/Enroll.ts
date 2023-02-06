@@ -1,12 +1,5 @@
 import { Request, Response, Router } from "express";
-import {
-  BAD_REQUEST,
-  CREATED,
-  UNAUTHORIZED,
-  INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
-  OK,
-} from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import passport from "passport";
 import { Op } from "sequelize";
 import { Credential } from "@models/Credential";
@@ -69,11 +62,11 @@ export class EnrollRouter {
   })
   getEnrolled(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(UNAUTHORIZED).send();
+      res.status(StatusCodes.UNAUTHORIZED).send();
       return;
     }
     if (!req.params.issuanceId) {
-      res.status(BAD_REQUEST).send();
+      res.status(StatusCodes.BAD_REQUEST).send();
       return;
     }
     Issuance.findOne({
@@ -82,7 +75,7 @@ export class EnrollRouter {
     })
       .then((issuance) => {
         if (!issuance) {
-          res.status(NOT_FOUND).send();
+          res.status(StatusCodes.NOT_FOUND).send();
           return;
         }
         if (!req.user.isAdmin) {
@@ -91,15 +84,15 @@ export class EnrollRouter {
             !req.user.groups ||
             !groupids.includes(issuance.credential.groupid)
           ) {
-            res.status(UNAUTHORIZED).send();
+            res.status(StatusCodes.UNAUTHORIZED).send();
             return;
           }
         }
         issuance
-          ? res.status(OK).json(issuance.toJSON())
-          : res.status(NOT_FOUND).send();
+          ? res.status(StatusCodes.OK).json(issuance.toJSON())
+          : res.status(StatusCodes.NOT_FOUND).send();
       })
-      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+      .catch((err) => res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err));
   }
 
   @ApiOperationPost({
@@ -132,7 +125,7 @@ export class EnrollRouter {
   })
   enrollRecipients(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(UNAUTHORIZED).send();
+      res.status(StatusCodes.UNAUTHORIZED).send();
       return;
     }
     Issuance.findOne({
@@ -141,7 +134,7 @@ export class EnrollRouter {
     })
       .then((issuance) => {
         if (issuance === null) {
-          res.status(NOT_FOUND).send();
+          res.status(StatusCodes.NOT_FOUND).send();
           return;
         }
         if (!req.user.isAdmin) {
@@ -151,7 +144,7 @@ export class EnrollRouter {
             !req.user.groups ||
             !groupids.includes(issuance.credential.groupid)
           ) {
-            res.status(UNAUTHORIZED).send();
+            res.status(StatusCodes.UNAUTHORIZED).send();
             return;
           }
         }
@@ -174,11 +167,11 @@ export class EnrollRouter {
               return recipient.$add("Issuance", issuance, { through: ri });
             })
           ).then((results) =>
-            res.status(CREATED).json({ created: results.length })
+            res.status(StatusCodes.CREATED).json({ created: results.length })
           );
         });
       })
-      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+      .catch((err) => res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err));
   }
   getRouter(): Router {
     return this.router;

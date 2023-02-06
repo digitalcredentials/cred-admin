@@ -1,11 +1,5 @@
 import { Request, Response, Router } from "express";
-import {
-  CREATED,
-  FORBIDDEN,
-  INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
-  OK,
-} from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import passport from "passport";
 import { Op } from "sequelize";
 import { Group } from "@models/Group";
@@ -57,7 +51,7 @@ export class CredentialsRouter {
   })
   getCredentials(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(FORBIDDEN).send();
+      res.status(StatusCodes.FORBIDDEN).send();
       return;
     }
     const where = {} as FindOptions;
@@ -72,7 +66,7 @@ export class CredentialsRouter {
           [Op.or]: groups.map((group: Group) => ({ groupid: group.id })),
         };
       } catch (err) {
-        res.status(INTERNAL_SERVER_ERROR).send();
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send();
         return;
       }
     }
@@ -80,11 +74,11 @@ export class CredentialsRouter {
       .then((credentials) =>
         credentials
           ? res
-              .status(OK)
+              .status(StatusCodes.OK)
               .json(credentials.map((credential) => credential.toJSON()))
-          : res.status(NOT_FOUND).send()
+          : res.status(StatusCodes.NOT_FOUND).send()
       )
-      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+      .catch((err) => res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err));
   }
 
   @ApiOperationPost({
@@ -112,7 +106,7 @@ export class CredentialsRouter {
   })
   createCredential(req: Request, res: Response): void {
     if (!req.user) {
-      res.status(FORBIDDEN).send();
+      res.status(StatusCodes.FORBIDDEN).send();
       return;
     }
     if (!req.user.isAdmin) {
@@ -123,13 +117,15 @@ export class CredentialsRouter {
         !req.body.groupid ||
         !groups.map((group: Group) => group.id).includes(req.body.groupid)
       ) {
-        res.status(FORBIDDEN).send();
+        res.status(StatusCodes.FORBIDDEN).send();
         return;
       }
     }
     Credential.create(req.body)
-      .then((credential) => res.status(CREATED).json(credential.toJSON()))
-      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+      .then((credential) =>
+        res.status(StatusCodes.CREATED).json(credential.toJSON())
+      )
+      .catch((err) => res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err));
   }
   getRouter(): Router {
     return this.router;

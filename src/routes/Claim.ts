@@ -1,11 +1,5 @@
 import { Request, Response, Router } from "express";
-import {
-  BAD_REQUEST,
-  UNAUTHORIZED,
-  INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
-  OK,
-} from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import { Group } from "@models/Group";
 import { Issuance } from "@models/Issuance";
 import { Recipient } from "@models/Recipient";
@@ -70,7 +64,7 @@ export class ClaimRouter {
   })
   getClaim(req: Request, res: Response): void {
     if (!req.params.issuanceId || !req.params.recipientId) {
-      res.status(BAD_REQUEST).send();
+      res.status(StatusCodes.BAD_REQUEST).send();
       return;
     }
     RecipientIssuance.findOne({
@@ -82,7 +76,7 @@ export class ClaimRouter {
     })
       .then((award) => {
         if (!award) {
-          res.status(NOT_FOUND).send();
+          res.status(StatusCodes.NOT_FOUND).send();
           return;
         }
         const reqUrl = encodeURIComponent(`${config.publicUrl}/api/claim/`);
@@ -95,10 +89,10 @@ export class ClaimRouter {
             qr,
             title: award.issuance.credential.title,
           };
-          res.status(OK).json(claim);
+          res.status(StatusCodes.OK).json(claim);
         });
       })
-      .catch((err) => res.status(INTERNAL_SERVER_ERROR).send(err));
+      .catch((err) => res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err));
   }
 
   @ApiOperationPost({
@@ -114,10 +108,13 @@ export class ClaimRouter {
     },
   })
   async postClaim(req: Request, res: Response): Promise<Response> {
+    logger.debug(JSON.stringify(req.body));
     if (!req.body.proof?.challenge || !req.body.holder) {
       return new Promise((resolve) =>
         resolve(
-          res.status(BAD_REQUEST).send("Missing challenge or recipient DID")
+          res
+            .status(StatusCodes.BAD_REQUEST)
+            .send("Missing challenge or recipient DID")
         )
       );
     }
@@ -125,7 +122,7 @@ export class ClaimRouter {
 
     const authHeader = req.get("Authorization");
     if (!authHeader) {
-      return res.status(UNAUTHORIZED).send("Missing OIDC token");
+      return res.status(StatusCodes.UNAUTHORIZED).send("Missing OIDC token");
     }
     try {
       const OidcInfo = await axios.get(
@@ -139,6 +136,7 @@ export class ClaimRouter {
       );
 
       const OidcId = OidcInfo.data[config.oidc.compare];
+      logger.debug(OidcId);
 
       const { verifyPresentation } = createVerifier([]);
       const didVerificationResult = await verifyPresentation({
@@ -148,10 +146,10 @@ export class ClaimRouter {
       });
 
       if (!didVerificationResult.verified) {
-        return res.status(UNAUTHORIZED).send(didVerificationResult);
+        return res.status(StatusCodes.UNAUTHORIZED).send(didVerificationResult);
       }
 
-      return RecipientIssuance.findOne({
+      const award = await RecipientIssuance.findOne({
         where: { awardId },
         include: [
           Recipient,
@@ -160,92 +158,83 @@ export class ClaimRouter {
             include: [{ model: Credential, include: [Group] }],
           },
         ],
-      })
-        .then(async (award) => {
-          if (!award) {
-            return res.status(NOT_FOUND).send();
-          }
-          if (
-            OidcId !== award.recipient.externalId &&
-            OidcId !== award.recipient.email
-          ) {
-            logger.warn(
-              `Recipient mismatch: OIDC param "${config.oidc.compare}" was "${OidcId}", but recipient id is "${award.recipient.externalId} and email is "${award.recipient.email}"`
-            );
-            return res
-              .status(UNAUTHORIZED)
-              .send("Logged in user doesn't match credential recipient.");
-          }
-          award.recipient.did = req.body.holder;
-          award.recipient.save();
-          if (!award.isApproved) {
-            return res
-              .status(UNAUTHORIZED)
-              .send(
-                "Recipient has not completed requirements to receive this credential"
-              );
-          }
-          if (!award.issuance.credential.group.didDoc) {
-            return res
-              .status(INTERNAL_SERVER_ERROR)
-              .send("Issuing Group has not been configured with a key");
-          }
-          const templateVals = {
-            ...award.issuance.credential.templateValues,
-            AWARD_URL: `${config.publicUrl}/api/issuance/${award.issuance.id}`,
-            ISSUER_DID: award.issuance.credential.group.didDoc.id,
-            ISSUER_NAME: award.issuance.credential.group.name,
-            DATE: award.issuance.issueDate.toISOString(),
-            RECIPIENT_DID: req.body.holder,
-            RECIPIENT_EMAIL: award.recipient.email,
-            RECIPIENT_NAME: award.recipient.name,
-            ISSUANCE_ID: award.issuance.id.toString(10),
-          };
-          const templateReadable = await files.getFileAsReadable(
-            award.issuance.credential.templatePath
+      });
+      if (!award) {
+        return res.status(StatusCodes.NOT_FOUND).send();
+      }
+      if (
+        OidcId !== award.recipient.externalId &&
+        OidcId !== award.recipient.email
+      ) {
+        logger.warn(
+          `Recipient mismatch: OIDC param "${config.oidc.compare}" was "${OidcId}", but recipient id is "${award.recipient.externalId} and email is "${award.recipient.email}"`
+        );
+        return res
+          .status(StatusCodes.UNAUTHORIZED)
+          .send("Logged in user doesn't match credential recipient.");
+      }
+      award.recipient.did = req.body.holder;
+      award.recipient.save();
+      if (!award.isApproved) {
+        return res
+          .status(StatusCodes.UNAUTHORIZED)
+          .send(
+            "Recipient has not completed requirements to receive this credential"
           );
-          const readableToString = (readable: Readable): Promise<string> => {
-            return new Promise((resolve, reject) => {
-              let data = "";
-              readable.on("data", (chunk: string) => {
-                data += chunk;
-              });
-              readable.on("end", () => {
-                resolve(data);
-              });
-              readable.on("error", (err: Error) => {
-                reject(err);
-              });
-            });
-          };
-          const template = parse(
-            JSON.parse(await readableToString(templateReadable))
+      }
+      if (!award.issuance.credential.group.didDoc) {
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .send("Issuing Group has not been configured with a key");
+      }
+      const templateVals = {
+        ...award.issuance.credential.templateValues,
+        AWARD_URL: `${config.publicUrl}/api/issuance/${award.issuance.id}`,
+        ISSUER_DID: award.issuance.credential.group.didDoc.id,
+        ISSUER_NAME: award.issuance.credential.group.name,
+        DATE: award.issuance.issueDate.toISOString(),
+        RECIPIENT_DID: req.body.holder,
+        RECIPIENT_EMAIL: award.recipient.email,
+        RECIPIENT_NAME: award.recipient.name,
+        ISSUANCE_ID: award.issuance.id.toString(10),
+      };
+      logger.debug(JSON.stringify(templateVals));
+      const templateReadable = await files.getFileAsReadable(
+        award.issuance.credential.templatePath
+      );
+      const readableToString = (readable: Readable): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const chunks: Array<any> = [];
+          readable.on("data", (chunk) => chunks.push(chunk));
+          readable.on("end", () =>
+            resolve(Buffer.concat(chunks).toString("utf8"))
           );
-          const populated = template(templateVals);
-          const { sign } = createIssuer([
-            award.issuance.credential.group.didDoc,
-          ]);
-          award.isIssued = true;
-          award.issuedAt = new Date();
-          return Promise.all([
-            award.save(),
-            sign(populated, {
-              verificationMethod: award.issuance.credential.group.didKeyId,
-            }),
-          ])
-            .then(([, signed]) => res.status(OK).json(signed))
-            .catch((err) => {
-              logger.error(err);
-              return res.status(INTERNAL_SERVER_ERROR).send(err);
-            });
-        })
-        .catch((err) => {
-          logger.error(err);
-          return res.status(INTERNAL_SERVER_ERROR).send(err);
+          readable.on("error", (err) => reject(err));
         });
+      };
+      const templateJson = await readableToString(templateReadable);
+      logger.debug(templateJson);
+      const template = parse(JSON.parse(templateJson));
+      logger.debug(JSON.stringify(template));
+      const populated = template(templateVals);
+      logger.debug(JSON.stringify(populated));
+      const { sign } = createIssuer([award.issuance.credential.group.didDoc]);
+      award.isIssued = true;
+      award.issuedAt = new Date();
+      const [, signed] = await Promise.all([
+        award.save(),
+        sign(populated, {
+          verificationMethod: award.issuance.credential.group.didKeyId,
+        }),
+      ]).catch((err) => {
+        logger.error("Signing Error!", err);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+        return [];
+      });
+      return res.status(StatusCodes.OK).json(signed);
     } catch (err) {
       logger.error(err);
-      return res.status(INTERNAL_SERVER_ERROR).send(err);
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 
