@@ -25,7 +25,7 @@ import config from "../config";
 import type { Readable } from "stream";
 
 @ApiPath({
-  path: "/api/claim/{awardId}",
+  path: "/api/claim/",
   name: "Claim",
 })
 export class ClaimRouter {
@@ -40,6 +40,7 @@ export class ClaimRouter {
   @ApiOperationGet({
     description: "Claim an issued credential",
     summary: "Claim an issued credential",
+    path: "{recipientId}/{issuanceId}",
     parameters: {
       path: {
         recipientId: {

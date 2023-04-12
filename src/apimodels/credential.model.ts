@@ -39,7 +39,12 @@ export class CredentialPostModel {
   @ApiModelProperty({
     required: true,
   })
-  template!: Record<string, unknown>;
+  templatePath!: string;
+
+  @ApiModelProperty({
+    required: true,
+  })
+  templateValues!: Record<string, unknown>;
 
   @ApiModelProperty({
     required: true,
