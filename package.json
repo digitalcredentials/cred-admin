@@ -27,7 +27,7 @@
     "@server": "dist/Server"
   },
   "dependencies": {
-    "@digitalcredentials/sign-and-verify-core": "^2.1.0",
+    "@digitalcredentials/sign-and-verify-core": "^2.1.1",
     "@tweedegolf/storage-abstraction": "^1.4.3",
     "axios": "^0.25.0",
     "bcrypt": "^5.0.1",
