@@ -15,7 +15,6 @@ import {
   createIssuer,
   createVerifier,
 } from "@digitalcredentials/sign-and-verify-core";
-import axios from "axios";
 import parse from "json-templates";
 import QRCode from "qrcode";
 import files from "../files";
@@ -82,8 +81,8 @@ export class ClaimRouter {
         }
         const reqUrl = encodeURIComponent(`${config.publicUrl}/api/claim/`);
         const url = `dccrequest://request?issuer=${encodeURIComponent(
-          config.oidc.issuerUrl
-        )}&vc_request_url=${reqUrl}&challenge=${award.awardId}&auth_type=code`;
+          config.oidc.issuerUrl,
+        )}&vc_request_url=${reqUrl}&challenge=${award.awardId}&auth_type=bearer`;
         QRCode.toDataURL(url).then((qr) => {
           const claim = {
             url,
@@ -115,30 +114,13 @@ export class ClaimRouter {
         resolve(
           res
             .status(StatusCodes.BAD_REQUEST)
-            .send("Missing challenge or recipient DID")
-        )
+            .send("Missing challenge or recipient DID"),
+        ),
       );
     }
     const awardId = req.body.proof.challenge;
 
-    const authHeader = req.get("Authorization");
-    if (!authHeader) {
-      return res.status(StatusCodes.UNAUTHORIZED).send("Missing OIDC token");
-    }
     try {
-      const OidcInfo = await axios.get(
-        `${config.oidc.issuerUrl}${config.oidc.userinfoPath}`,
-        {
-          headers: {
-            Authorization: authHeader,
-          },
-          validateStatus: (status) => status === 200,
-        }
-      );
-
-      const OidcId = OidcInfo.data[config.oidc.compare];
-      logger.debug(OidcId);
-
       const { verifyPresentation } = createVerifier([]);
       const didVerificationResult = await verifyPresentation({
         verifiablePresentation: req.body,
@@ -163,24 +145,13 @@ export class ClaimRouter {
       if (!award) {
         return res.status(StatusCodes.NOT_FOUND).send();
       }
-      if (
-        OidcId !== award.recipient.externalId &&
-        OidcId !== award.recipient.email
-      ) {
-        logger.warn(
-          `Recipient mismatch: OIDC param "${config.oidc.compare}" was "${OidcId}", but recipient id is "${award.recipient.externalId} and email is "${award.recipient.email}"`
-        );
-        return res
-          .status(StatusCodes.UNAUTHORIZED)
-          .send("Logged in user doesn't match credential recipient.");
-      }
       award.recipient.did = req.body.holder;
       award.recipient.save();
       if (!award.isApproved) {
         return res
           .status(StatusCodes.UNAUTHORIZED)
           .send(
-            "Recipient has not completed requirements to receive this credential"
+            "Recipient has not completed requirements to receive this credential",
           );
       }
       if (!award.issuance.credential.group.didDoc) {
@@ -201,14 +172,14 @@ export class ClaimRouter {
       };
       logger.debug(JSON.stringify(templateVals));
       const templateReadable = await files.getFileAsReadable(
-        award.issuance.credential.templatePath
+        award.issuance.credential.templatePath,
       );
       const readableToString = (readable: Readable): Promise<string> => {
         return new Promise((resolve, reject) => {
           const chunks: Array<any> = [];
           readable.on("data", (chunk) => chunks.push(chunk));
           readable.on("end", () =>
-            resolve(Buffer.concat(chunks).toString("utf8"))
+            resolve(Buffer.concat(chunks).toString("utf8")),
           );
           readable.on("error", (err) => reject(err));
         });

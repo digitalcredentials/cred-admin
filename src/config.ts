@@ -37,14 +37,14 @@ const config = {
   trustProxy: getEnvVarOrDefault("TRUST_PROXY", "loopback"),
   dbConnectionUrl: getEnvVarOrExitError("CA_DB_CONNECTION_URL"),
   oidc: {
-    compare: getEnvVarOrDefault("OIDC_COMPARE", "sub"),
+    // compare: getEnvVarOrDefault("OIDC_COMPARE", "sub"),
     issuerUrl: getEnvVarOrExitError("OIDC_ISSUER_URL"),
-    userinfoPath: getEnvVarOrDefault("OIDC_USERINFO_PATH", "/userinfo"),
+    // userinfoPath: getEnvVarOrDefault("OIDC_USERINFO_PATH", "/userinfo"),
   },
   publicUrl: getEnvVarOrExitError("PUBLIC_URL"),
   templateUrl: getEnvVarOrDefault(
     "TEMPLATE_URL",
-    `local://${path.join(__dirname, "..", "templates")}`
+    `local://${path.join(__dirname, "..", "templates")}`,
   ),
 };
 
