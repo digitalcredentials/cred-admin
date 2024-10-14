@@ -13,7 +13,7 @@ import {
 } from "swagger-express-typescript";
 import {
   createIssuer,
-  createVerifier,
+  //  createVerifier,
 } from "@digitalcredentials/sign-and-verify-core";
 import parse from "json-templates";
 import QRCode from "qrcode";
@@ -82,7 +82,9 @@ export class ClaimRouter {
         const reqUrl = encodeURIComponent(`${config.publicUrl}/api/claim/`);
         const url = `dccrequest://request?issuer=${encodeURIComponent(
           config.oidc.issuerUrl,
-        )}&vc_request_url=${reqUrl}&challenge=${award.awardId}&auth_type=bearer`;
+        )}&vc_request_url=${reqUrl}&challenge=${
+          award.awardId
+        }&auth_type=bearer`;
         QRCode.toDataURL(url).then((qr) => {
           const claim = {
             url,
@@ -121,6 +123,7 @@ export class ClaimRouter {
     const awardId = req.body.proof.challenge;
 
     try {
+      /*
       const { verifyPresentation } = createVerifier([]);
       const didVerificationResult = await verifyPresentation({
         verifiablePresentation: req.body,
@@ -131,7 +134,7 @@ export class ClaimRouter {
       if (!didVerificationResult.verified) {
         return res.status(StatusCodes.UNAUTHORIZED).send(didVerificationResult);
       }
-
+      */
       const award = await RecipientIssuance.findOne({
         where: { awardId },
         include: [
